@@ -31,6 +31,7 @@ Calc. Viagens/
 │ ├── report_window.py
 │ └── viagens_window.py
 ├── main.py
+├── README.md
 ├── requirements.txt
 └── icon.ico
 
