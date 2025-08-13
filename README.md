@@ -23,7 +23,6 @@ O projeto segue uma arquitetura em camadas, separando a interface do usuário (V
 
 ## 3. Estrutura de Arquivos
 Calc. Viagens/
-├── .venv/
 ├── src/
 │ ├── init.py
 │ ├── main_window.py
