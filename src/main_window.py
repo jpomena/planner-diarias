@@ -2,11 +2,11 @@ import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
 from datetime import datetime
-from src import ConfigsWindow
-from src import ReportWindow
-from src import Database
-from src import AbrirWindow
-from src import ApagarWindow
+from .configs_window import ConfigsWindow
+from .report_window import ReportWindow
+from .database import Database
+from .viagens_window import AbrirWindow
+from .viagens_window import ApagarWindow
 
 
 class MainWindow(ttk.Window):
