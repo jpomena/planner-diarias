@@ -22,18 +22,19 @@ O projeto segue uma arquitetura em camadas, separando a interface do usuário (V
 - **Camada de Dados (Data Layer):** A classe `Database` (`src/database.py`) é responsável por toda a comunicação com o banco de dados `SQLite`, abstraindo as consultas SQL.
 
 ## 3. Estrutura de Arquivos
-Calc. Viagens/
-├── src/
-│ ├── init.py
-│ ├── main_window.py
-│ ├── database.py
-│ ├── configs_window.py
-│ ├── report_window.py
-│ └── viagens_window.py
-├── main.py
-├── README.md
-├── requirements.txt
-└── icon.ico
+
+    Calc. Viagens/
+    ├── src/
+    │   ├── __init__.py
+    │   ├── main_window.py
+    │   ├── database.py
+    │   ├── configs_window.py
+    │   ├── report_window.py
+    │   └── viagens_window.py
+    ├── main.py
+    ├── README.md
+    ├── requirements.txt
+    └── icon.ico
 
 
 ## 4. Dependências e Execução
