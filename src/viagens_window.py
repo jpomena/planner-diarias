@@ -1,7 +1,7 @@
 import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
-from src.database import Database
+from .database import Database
 
 
 class AbrirWindow(Tk.Toplevel):
@@ -105,3 +105,4 @@ class ApagarWindow(Tk.Toplevel):
             'Sucesso', f'A viagem {nome_viagem_str} foi apagada com sucesso!'
         )
         self.destroy()
+
