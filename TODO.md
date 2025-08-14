@@ -1,23 +1,45 @@
-# Lista de Tarefas - Planner de Diárias
+# Lista de Tarefas - Planner de Diárias - Implementação de Abas
 
-### Refatoração Crítica (Prioridade Alta)
-- [X] **Corrigir `traces` em `src/configs_window.py`:**
-  - [X] Unificar `CriarEntrysCapitais` e `CriarEntrysOutras` em um único método `CriarEntrysPercentuais(self, tipo_localidade, column)`.
-  - [X] Unificar `ValidarPctCapitais` e `ValidarPctOutras` em `ValidarPct(...)`.
-  - [X] Implementar a lógica correta de `trace_id` para cada `StringVar`, armazenando o ID na instância `self` (`setattr`) e usando-o para remover (`trace_remove`) o trace antes de cada atualização e recriá-lo depois.
+### Refatoração da Interface (Prioridade Alta)
 
-- [X] **Corrigir bug em `src/controller.py`:**
-  - [X] No método `MostrarLocalidade`, a linha `tipo_var_str = widgets_linha["tipo_var"]` está incorreta. Corrigir para `tipo_var_str = widgets_linha["tipo_var"].get()` para obter o valor da `StringVar`.
+-   [ ] **Reestruturar `src/main_window.py` para usar Abas (`ttk.Notebook`):**
+    -   [ ] Adicionar um widget `ttk.Notebook` (abas) à `MainWindow`.
+    -   [ ] Migrar todo o conteúdo da aba "Despesas" (elementos da interface e suas lógicas de layout) para um `ttk.Frame` dedicado que será adicionado como a primeira aba.
 
-### Melhorias e Qualidade do Código (Prioridade Média)
-- [X] **Refatorar `src/viagens_window.py`:**
-  - [X] Unificar as classes `AbrirWindow` e `ApagarWindow` para reduzir a duplicação de código. Elas compartilham a mesma interface. Pode-se criar uma classe base ou uma única classe que aceite o tipo de ação ("abrir" ou "apagar") como parâmetro.
+-   [ ] **Criar novas classes/arquivos para as abas de "Carro", "Avião" e "Hotel":**
+    -   [ ] Criar `src/carro_window.py`: Definir a interface (campos de entrada para dados de carro como combustível, estacionamento, etc.) e métodos de layout.
+    -   [ ] Criar `src/aviao_window.py`: Definir a interface (campos para passagens, taxas, etc.) e métodos de layout.
+    -   [ ] Criar `src/hotel_window.py`: Definir a interface (campos para diárias, serviços, etc.) e métodos de layout.
+    -   [ ] Cada nova classe de aba deve receber o `controller` como parâmetro para delegar a lógica.
 
-- [X] **Refatorar `src/report_window.py`:**
-  - [X] No método `PreencherTabelaTotais`, a lógica de somar os totais é muito manual com `if/elif`. Considere usar um dicionário para acumular os valores, o que tornaria o código mais limpo e fácil de manter se novos tipos de despesa forem adicionados.
+### Atualizações no Controlador (Prioridade Alta)
 
-### Limpeza
-- [X] **Remover arquivos temporários:**
-  - [X] Apagar o arquivo `filter-script.py`, que foi usado apenas para corrigir o problema do Git.
-- [ ] **Adicionar Docstrings:**
-  - [ ] Adicionar docstrings aos métodos mais complexos para explicar sua função, especialmente em `controller.py`, `configs_window.py` e `database.py`.
+-   [ ] **Adaptar `src/controller.py` para gerenciar as novas abas:**
+    -   [ ] Instanciar as novas classes de abas (`CarroWindow`, `AviaoWindow`, `HotelWindow`) no `__init__` da classe `Sasori`.
+    -   [ ] Passar a instância do `controller` para cada uma dessas novas abas.
+    -   [ ] Desenvolver novos métodos no `controller` para manipular a lógica de negócios e persistência de dados para "Carro", "Avião" e "Hotel".
+
+### Modelo (Banco de Dados) (Prioridade Média)
+
+-   [ ] **Estender `src/database.py` para as novas abas:**
+    -   [ ] Criar novas tabelas no banco de dados para armazenar informações de "Carro", "Avião" e "Hotel" (Ex: `tabela_carros`, `tabela_avioes`, `tabela_hoteis`).
+    -   [ ] Adicionar métodos ao `Database` para `add`, `get` e `delete` dados específicos de carro, avião e hotel.
+
+### Lógica Específica das Abas (Prioridade Média)
+
+-   [ ] **Implementar a lógica de entrada e cálculo para "Carro", "Avião" e "Hotel":**
+    -   [ ] Definir campos de entrada (Entry, Combobox, etc.) apropriados para cada tipo de despesa.
+    -   [ ] Implementar a lógica de cálculo (se houver) para cada nova aba dentro do `controller`, similar à lógica de `atualizar_valor` para despesas.
+    -   [ ] Lidar com a persistência dos dados de cada aba através do `database.py`.
+
+### Integração e Testes (Prioridade Média/Baixa)
+
+-   [ ] **Revisar e ajustar interações existentes:**
+    -   [ ] Garantir que funcionalidades como "Abrir Viagem" e "Salvar Viagem" no `controller` possam lidar com os dados de todas as abas.
+    -   [ ] Considerar como o "Gerar Relatório" pode ser estendido para incluir dados das novas abas.
+-   [ ] **Atualizar imports:**
+    -   [ ] Garantir que todos os arquivos tenham os imports corretos para as novas classes.
+-   [ ] **Testar exaustivamente:**
+    -   [ ] Testar a navegação entre as abas.
+    -   [ ] Testar a entrada e salvamento de dados em cada nova aba.
+    -   [ ] Testar a funcionalidade de "Abrir" e "Salvar" com dados de todas as abas.
