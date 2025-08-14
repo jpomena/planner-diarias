@@ -94,3 +94,8 @@ O futuro do "Planner de Diárias" inclui uma expansão significativa da interfac
         *   **Hotel**: Para registrar valores de diárias, serviços de quarto, etc.
 
 Esta mudança implicará em atualizações nas camadas de View, Controller e Model para suportar os novos tipos de dados e lógica de negócios.
+
+
+
+
+<a href="https://www.flaticon.com/free-icons/trip" title="trip icons">Trip icons created by Wichai.wi - Flaticon</a>
