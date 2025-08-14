@@ -17,7 +17,7 @@
   - [X] No método `PreencherTabelaTotais`, a lógica de somar os totais é muito manual com `if/elif`. Considere usar um dicionário para acumular os valores, o que tornaria o código mais limpo e fácil de manter se novos tipos de despesa forem adicionados.
 
 ### Limpeza
-- [ ] **Remover arquivos temporários:**
-  - [ ] Apagar o arquivo `filter-script.py`, que foi usado apenas para corrigir o problema do Git.
+- [X] **Remover arquivos temporários:**
+  - [X] Apagar o arquivo `filter-script.py`, que foi usado apenas para corrigir o problema do Git.
 - [ ] **Adicionar Docstrings:**
   - [ ] Adicionar docstrings aos métodos mais complexos para explicar sua função, especialmente em `controller.py`, `configs_window.py` e `database.py`.
