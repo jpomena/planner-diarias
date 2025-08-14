@@ -10,11 +10,11 @@
   - [X] No método `MostrarLocalidade`, a linha `tipo_var_str = widgets_linha["tipo_var"]` está incorreta. Corrigir para `tipo_var_str = widgets_linha["tipo_var"].get()` para obter o valor da `StringVar`.
 
 ### Melhorias e Qualidade do Código (Prioridade Média)
-- [ ] **Refatorar `src/viagens_window.py`:**
-  - [ ] Unificar as classes `AbrirWindow` e `ApagarWindow` para reduzir a duplicação de código. Elas compartilham a mesma interface. Pode-se criar uma classe base ou uma única classe que aceite o tipo de ação ("abrir" ou "apagar") como parâmetro.
+- [X] **Refatorar `src/viagens_window.py`:**
+  - [X] Unificar as classes `AbrirWindow` e `ApagarWindow` para reduzir a duplicação de código. Elas compartilham a mesma interface. Pode-se criar uma classe base ou uma única classe que aceite o tipo de ação ("abrir" ou "apagar") como parâmetro.
 
-- [ ] **Refatorar `src/report_window.py`:**
-  - [ ] No método `PreencherTabelaTotais`, a lógica de somar os totais é muito manual com `if/elif`. Considere usar um dicionário para acumular os valores, o que tornaria o código mais limpo e fácil de manter se novos tipos de despesa forem adicionados.
+- [X] **Refatorar `src/report_window.py`:**
+  - [X] No método `PreencherTabelaTotais`, a lógica de somar os totais é muito manual com `if/elif`. Considere usar um dicionário para acumular os valores, o que tornaria o código mais limpo e fácil de manter se novos tipos de despesa forem adicionados.
 
 ### Limpeza
 - [ ] **Remover arquivos temporários:**

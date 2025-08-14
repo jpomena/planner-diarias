@@ -111,67 +111,31 @@ class ReportWindow(Tk.Toplevel):
             self.tabela_totais.column(col, width=150, anchor='center')
 
     def preencher_tabela_totais(self):
-        lanche_total = 0.0
-        manha_total = 0.0
-        almoco_total = 0.0
-        tarde_total = 0.0
-        janta_total = 0.0
+        tipos_despesa = [
+            'Lanche em Trajeto',
+            'Café da Manhã',
+            'Almoço',
+            'Café da Tarde',
+            'Janta',
+            'Total'
+        ]
+        totais_despesas = {}
+
+        for tipo in tipos_despesa:
+            totais_despesas[f'{tipo}'] = 0.0
+
         for linha in self.linhas_despesas:
             tipo_str = linha['tipo_var'].get()
             valor_str = linha['valor_var'].get()
             valor_float = float(valor_str.replace('R$ ', '').replace(',', '.'))
-            if tipo_str == "Lanche em Trajeto":
-                lanche_total += valor_float
-            elif tipo_str == 'Café da Manhã':
-                manha_total += valor_float
-            elif tipo_str == 'Almoço':
-                almoco_total += valor_float
-            elif tipo_str == 'Café da Tarde':
-                tarde_total += valor_float
-            elif tipo_str == 'Janta':
-                janta_total += valor_float
-        total_total = sum([
-            lanche_total,
-            manha_total,
-            almoco_total,
-            tarde_total,
-            janta_total
-        ])
+            totais_despesas[f'{tipo_str}'] += valor_float
+            totais_despesas['Total'] += valor_float
 
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Lanche em Trajeto', (f'R$ {lanche_total:.2f}').replace(
-                    '.', ','
-                )))
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Café da Manhã', (f'R$ {manha_total:.2f}').replace('.', ',')
-            ))
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Almoço', (f'R$ {almoco_total:.2f}').replace('.', ',')
-            ))
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Café da Tarde', (f'R$ {tarde_total:.2f}').replace('.', ',')
-            ))
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Janta', (f'R$ {janta_total:.2f}').replace('.', ',')
-            ))
-        self.tabela_totais.insert(
-            '',
-            'end',
-            values=(
-                'Total', (f'R$ {total_total:.2f}').replace('.', ',')
-            ))
+        for tipo in tipos_despesa:
+            self.tabela_totais.insert(
+                '',
+                'end',
+                values=(
+                    f'{tipo}', (f'R$ {totais_despesas[tipo]:.2f}').replace(
+                        '.', ','
+                    )))
