@@ -26,16 +26,16 @@ planner-diarias/
 ├── src/
 │ ├── init.py
 │ ├── configs_window.py
-│ ├── controller.py # O Controlador (Sasori)
-│ ├── database.py # O Modelo (Database)
-│ ├── main_window.py # Uma das Views (Janela Principal)
-│ ├── report_window.py # Uma das Views (Janela de Relatório)
-│ └── viagens_window.py # Uma das Views (Janela para Abrir/Apagar Viagens)
-├── main.py # Ponto de entrada da aplicação
+│ ├── controller.py
+│ ├── database.py
+│ ├── main_window.py
+│ ├── report_window.py
+│ └── viagens_window.py
+├── main.py
 ├── README.md
 ├── requirements.txt
-├── icon.ico # Ícone do aplicativo
-└── TODO.md # Lista de tarefas do projeto
+├── icon.ico
+└── TODO.md
 ```
 
 ## 4. Melhorias Recentes (v1.1.0)
