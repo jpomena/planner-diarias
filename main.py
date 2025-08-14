@@ -1,5 +1,5 @@
-from src import MainWindow
+from src import Sasori
 
 if __name__ == "__main__":
-    app = MainWindow()
-    app.mainloop()
+    app = Sasori()
+    app.mw.mainloop()

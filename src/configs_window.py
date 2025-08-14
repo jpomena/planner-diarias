@@ -3,15 +3,18 @@ import ttkbootstrap as ttk
 
 
 class ConfigsWindow(Tk.Toplevel):
-    def __init__(self, master, configs):
+    def __init__(self, master, controller, configs):
         super().__init__(master)
         self.master = master
+        self.controller = controller
+        self.configs = configs
+        self.tipos_config = list(self.configs.keys())
+
         self.title("Configurações")
         self.geometry("400x400")
         self.transient(master)
         self.grab_set()
-        self.configs = configs
-        self.tipos_config = list(self.configs.keys())
+
         self.frame_configs = ttk.Frame(
             self,
             padding=10
@@ -112,7 +115,7 @@ class ConfigsWindow(Tk.Toplevel):
     def FormatarPct(self, numero):
         return f'{numero:.1f}'.replace('.', ',')
 
-    def ValidarPctCapitais(self, tipo, pct_var, trace_pct, *trace):
+    def ValidarPctCapitais(self, tipo, pct_var, trace_pct_cap, *trace):
         pct_str = pct_var.get()
         pct_num = ''.join(filter(str.isdigit, pct_str))
 
@@ -122,10 +125,10 @@ class ConfigsWindow(Tk.Toplevel):
             pct_float = int(pct_num)/10
         self.configs[tipo]['Capitais'] = pct_float
 
-        pct_var.trace_remove('write', trace_pct)
+        pct_var.trace_remove('write', self.trace_pct_cap)
         pct_var.set(self.FormatarPct(pct_float))
-        trace_pct = pct_var.trace_add(
-            'write', lambda *args, t=tipo, p=pct_var, tp=trace_pct:
+        self.trace_pct_cap = pct_var.trace_add(
+            'write', lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_cap:
             self.ValidarPctCapitais(t, p, tp, *args)
         )
 
@@ -141,12 +144,13 @@ class ConfigsWindow(Tk.Toplevel):
                 pct_var
             )
 
-            trace_pct = pct_var.trace_add(
+            self.trace_pct_cap = pct_var.trace_add(
                 'write', lambda *args, t=tipo, p=pct_var, trace_pct=None:
                 self.ValidarPctCapitais(t, p, trace_pct, *args)
             )
             pct_var.trace_add(
-                'write', lambda *args, t=tipo, p=pct_var, tp=trace_pct:
+                'write',
+                lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_cap:
                 self.ValidarPctCapitais(t, p, tp, *args)
             )
 
@@ -172,7 +176,7 @@ class ConfigsWindow(Tk.Toplevel):
                 justify='left'
             ).pack(side=Tk.LEFT)
 
-    def ValidarPctOutras(self, tipo, pct_var, trace_pct, *trace):
+    def ValidarPctOutras(self, tipo, pct_var, trace_pct_out, *trace):
         pct_str = pct_var.get()
         pct_num = ''.join(filter(str.isdigit, pct_str))
 
@@ -182,10 +186,10 @@ class ConfigsWindow(Tk.Toplevel):
             pct_float = int(pct_num)/10
         self.configs[tipo]['Outras'] = pct_float
 
-        pct_var.trace_remove('write', trace_pct)
+        pct_var.trace_remove('write', self.trace_pct_out)
         pct_var.set(self.FormatarPct(pct_float))
-        trace_pct = pct_var.trace_add(
-            'write', lambda *args, t=tipo, p=pct_var, tp=trace_pct:
+        self.trace_pct_out = pct_var.trace_add(
+            'write', lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_out:
             self.ValidarPctOutras(t, p, tp, *args)
         )
 
@@ -201,12 +205,13 @@ class ConfigsWindow(Tk.Toplevel):
                 pct_var
             )
 
-            trace_pct = pct_var.trace_add(
+            self.trace_pct_out = pct_var.trace_add(
                 'write', lambda *args, t=tipo, p=pct_var, trace_pct=None:
                 self.ValidarPctOutras(t, p, trace_pct, *args)
             )
             pct_var.trace_add(
-                'write', lambda *args, t=tipo, p=pct_var, tp=trace_pct:
+                'write',
+                lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_out:
                 self.ValidarPctOutras(t, p, tp, *args)
             )
 
@@ -233,5 +238,5 @@ class ConfigsWindow(Tk.Toplevel):
             ).pack(side=Tk.LEFT)
 
     def Fechar(self):
-        self.master.AtualizarLinhas()
+        self.controller.AtualizarLinhas()
         self.destroy()

@@ -1,22 +1,23 @@
 import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
-from .database import Database
 
 
 class AbrirWindow(Tk.Toplevel):
-    def __init__(self, master, callback_carregar_viagem):
+    def __init__(self, master, controller, callback_carregar_viagem):
         super().__init__(master)
         self.master = master
+        self.controller = controller
+        self.callback_carregar_viagem = callback_carregar_viagem
+
         self.title("Abrir Viagem")
         self.geometry("300x150")
         self.resizable(False, False)
         self.transient(master)
         self.grab_set()
-        self.db = Database()
-        self.trip_names = self.db.ObterNomes()
+
+        self.lista_viagens = self.controller.db.ObterNomes()
         self.nome_viagem = Tk.StringVar()
-        self.callback_carregar_viagem = callback_carregar_viagem
 
         self.CriarLista()
 
@@ -29,13 +30,13 @@ class AbrirWindow(Tk.Toplevel):
         self.trip_combobox = ttk.Combobox(
             main_frame,
             textvariable=self.nome_viagem,
-            values=self.trip_names,
+            values=self.lista_viagens,
             state="readonly"
         )
         self.trip_combobox.pack(pady=5, fill=Tk.X, expand=True)
 
-        if self.trip_names:
-            self.trip_combobox.set(self.trip_names[0])
+        if self.lista_viagens:
+            self.trip_combobox.set(self.lista_viagens[0])
         else:
             self.trip_combobox.set("Nenhuma viagem salva")
             self.trip_combobox.config(state="disabled")
@@ -44,7 +45,7 @@ class AbrirWindow(Tk.Toplevel):
             main_frame,
             text="Abrir",
             command=self.AbrirViagem,
-            state="disabled" if not self.trip_names else "normal"
+            state="disabled" if not self.lista_viagens else "normal"
         )
         open_button.pack(pady=10)
 
@@ -56,21 +57,23 @@ class AbrirWindow(Tk.Toplevel):
 
 
 class ApagarWindow(Tk.Toplevel):
-    def __init__(self, master):
+    def __init__(self, master, controller):
         super().__init__(master)
         self.master = master
+        self.controller = controller
+
         self.title("Apagar Viagem")
         self.geometry("300x150")
         self.resizable(False, False)
         self.transient(master)
         self.grab_set()
-        self.db = Database()
-        self.trip_names = self.db.ObterNomes()
+
+        self.lista_viagens = self.controller.db.ObterNomes()
         self.nome_viagem = Tk.StringVar()
 
-        self.CriarLista()
+        self.CriarCombobox()
 
-    def CriarLista(self):
+    def CriarCombobox(self):
         main_frame = ttk.Frame(self, padding=10)
         main_frame.pack(fill=Tk.BOTH, expand=True)
 
@@ -79,13 +82,13 @@ class ApagarWindow(Tk.Toplevel):
         self.trip_combobox = ttk.Combobox(
             main_frame,
             textvariable=self.nome_viagem,
-            values=self.trip_names,
+            values=self.lista_viagens,
             state="readonly"
         )
         self.trip_combobox.pack(pady=5, fill=Tk.X, expand=True)
 
-        if self.trip_names:
-            self.trip_combobox.set(self.trip_names[0])
+        if self.lista_viagens:
+            self.trip_combobox.set(self.lista_viagens[0])
         else:
             self.trip_combobox.set("Nenhuma viagem salva")
             self.trip_combobox.config(state="disabled")
@@ -94,15 +97,14 @@ class ApagarWindow(Tk.Toplevel):
             main_frame,
             text="Apagar",
             command=self.ApagarViagem,
-            state="disabled" if not self.trip_names else "normal"
+            state="disabled" if not self.lista_viagens else "normal"
         )
         open_button.pack(pady=10)
 
     def ApagarViagem(self):
         nome_viagem_str = self.nome_viagem.get()
-        self.db.RemoverViagem(nome_viagem_str)
+        self.controller.db.RemoverViagem(nome_viagem_str)
         messagebox.showinfo(
             'Sucesso', f'A viagem {nome_viagem_str} foi apagada com sucesso!'
         )
         self.destroy()
-
