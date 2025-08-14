@@ -16,12 +16,12 @@ class AbrirWindow(Tk.Toplevel):
         self.transient(master)
         self.grab_set()
 
-        self.lista_viagens = self.controller.db.ObterNomes()
+        self.lista_viagens = self.controller.db.get_nome_viagens()
         self.nome_viagem = Tk.StringVar()
 
-        self.CriarLista()
+        self.criar_combobox()
 
-    def CriarLista(self):
+    def criar_combobox(self):
         main_frame = ttk.Frame(self, padding=10)
         main_frame.pack(fill=Tk.BOTH, expand=True)
 
@@ -44,12 +44,12 @@ class AbrirWindow(Tk.Toplevel):
         open_button = ttk.Button(
             main_frame,
             text="Abrir",
-            command=self.AbrirViagem,
+            command=self.abrir_viagem,
             state="disabled" if not self.lista_viagens else "normal"
         )
         open_button.pack(pady=10)
 
-    def AbrirViagem(self):
+    def abrir_viagem(self):
         nome_viagem_str = self.nome_viagem.get()
         if nome_viagem_str not in ('', 'Nenhuma viagem salva'):
             self.callback_carregar_viagem(nome_viagem_str)
@@ -68,12 +68,12 @@ class ApagarWindow(Tk.Toplevel):
         self.transient(master)
         self.grab_set()
 
-        self.lista_viagens = self.controller.db.ObterNomes()
+        self.lista_viagens = self.controller.db.get_nome_viagens()
         self.nome_viagem = Tk.StringVar()
 
-        self.CriarCombobox()
+        self.criar_combobox()
 
-    def CriarCombobox(self):
+    def criar_combobox(self):
         main_frame = ttk.Frame(self, padding=10)
         main_frame.pack(fill=Tk.BOTH, expand=True)
 
@@ -96,14 +96,14 @@ class ApagarWindow(Tk.Toplevel):
         open_button = ttk.Button(
             main_frame,
             text="Apagar",
-            command=self.ApagarViagem,
+            command=self.apagar_viagem,
             state="disabled" if not self.lista_viagens else "normal"
         )
         open_button.pack(pady=10)
 
-    def ApagarViagem(self):
+    def apagar_viagem(self):
         nome_viagem_str = self.nome_viagem.get()
-        self.controller.db.RemoverViagem(nome_viagem_str)
+        self.controller.db.del_viagem(nome_viagem_str)
         messagebox.showinfo(
             'Sucesso', f'A viagem {nome_viagem_str} foi apagada com sucesso!'
         )

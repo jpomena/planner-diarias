@@ -24,10 +24,10 @@ class MainWindow(ttk.Window):
             pady=2
         )
 
-    def Aviso(self, info):
+    def aviso(self, info):
         messagebox.showinfo(info[0], info[1])
 
-    def CriarFrameNome(self, nome_viagem):
+    def criar_frame_nome(self, nome_viagem):
         self.frame_nome = ttk.LabelFrame(
             self.frame_topo,
             text='Nome da Viagem',
@@ -47,7 +47,7 @@ class MainWindow(ttk.Window):
         )
         entry_nome.pack(fill=Tk.X, expand=True, padx=5, pady=2)
 
-    def CriarFrameControle(self):
+    def criar_frame_controle(self):
         self.frame_controle = ttk.LabelFrame(
             self.frame_topo,
             text="Controles",
@@ -61,31 +61,31 @@ class MainWindow(ttk.Window):
             pady=2
         )
 
-    def CriarBotoesControle(self):
+    def criar_botoes_controle(self):
         frame_botoes = ttk.Frame(self.frame_controle)
         frame_botoes.pack(expand=True, anchor='center')
 
         self.botao_add_linha = ttk.Button(
             frame_botoes,
             text="Adicionar Linha",
-            command=self.controller.CriarLinha
+            command=self.controller.criar_linha
         )
         self.botao_report = ttk.Button(
             frame_botoes,
             text="Gerar Relatório",
-            command=self.controller.GerarReport
+            command=self.controller.gerar_report
         )
         self.botao_configs = ttk.Button(
             frame_botoes,
             text="Configurações",
-            command=self.controller.AbrirConfigs
+            command=self.controller.abrir_configs
         )
 
         self.botao_add_linha.pack(side=Tk.LEFT, padx=5, pady=4)
         self.botao_report.pack(side=Tk.LEFT, padx=5, pady=4)
         self.botao_configs.pack(side=Tk.LEFT, padx=5, pady=4)
 
-    def CriarBotoesSQL(self):
+    def criar_botoes_sql(self):
         frame_sql = ttk.Frame(
             self.frame_0
         )
@@ -94,22 +94,22 @@ class MainWindow(ttk.Window):
         self.botao_abrir_viagem = ttk.Button(
             frame_sql,
             text='Abrir Viagem',
-            command=self.controller.AbrirViagemWindow  # TODO: Criar método
+            command=self.controller.abrir_viagem_window
         )
         self.botao_fechar_viagem = ttk.Button(
             frame_sql,
             text='Fechar Viagem',
-            command=self.controller.FecharViagem  # TODO: Criar método
+            command=self.controller.fechar_viagem
         )
         self.botao_add_viagem = ttk.Button(
             frame_sql,
             text='Salvar Viagem',
-            command=self.controller.SalvarViagem  # TODO: Criar método
+            command=self.controller.salvar_viagem
         )
         self.botao_del_viagem = ttk.Button(
             frame_sql,
             text='Apagar Viagem',
-            command=self.controller.ApagarViagem  # TODO: Criar método
+            command=self.controller.apagar_viagem
         )
 
         self.botao_abrir_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
@@ -117,7 +117,7 @@ class MainWindow(ttk.Window):
         self.botao_add_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
         self.botao_del_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
 
-    def CriarFrameDespesas(self):
+    def criar_frame_despesas(self):
         container = ttk.LabelFrame(
             self.frame_0, text="Despesas", padding=5
         )
@@ -161,7 +161,7 @@ class MainWindow(ttk.Window):
             widget.bind("<Button-4>", rolar_mouse)
             widget.bind("<Button-5>", rolar_mouse)
 
-    def CriarHeaders(self):
+    def criar_headers(self):
         headers = ["Data", "Tipo", "Localidade", "Valor", ""]
         col_dados = len(headers)
         for col in range(5):
@@ -180,7 +180,7 @@ class MainWindow(ttk.Window):
                     orient="vertical",
                 ).grid(row=0, column=col * 2 + 1, sticky="ns")
 
-    def CriarCampoData(self, widgets_linha, row_num, data_inicial=None):
+    def criar_campo_data(self, widgets_linha, row_num, data_inicial=None):
         if data_inicial:
             data_inicial_datetime = datetime.strptime(data_inicial, '%d/%m/%Y')
             data_entry = ttk.DateEntry(
@@ -205,7 +205,7 @@ class MainWindow(ttk.Window):
             sticky="ew"
         )
 
-    def CriarCampoTipo(self, widgets_linha, row_num, tipo_inicial=None):
+    def criar_campo_tipo(self, widgets_linha, row_num, tipo_inicial=None):
         if tipo_inicial:
             tipo_var = Tk.StringVar(value=tipo_inicial)
         else:
@@ -229,11 +229,11 @@ class MainWindow(ttk.Window):
         widgets_linha["tipo_combobox"].bind(
             "<<ComboboxSelected>>",
             lambda event, widgets_linha=widgets_linha, row_num=row_num: (
-                self.controller.MostrarLocalidade(widgets_linha, row_num),
-                self.controller.AtualizarValor(widgets_linha),
+                self.controller.atualizar_loc(widgets_linha, row_num),
+                self.controller.atualizar_valor(widgets_linha),
             ))
 
-    def CriarCampoLocalidade(self, widgets_linha, row_num, tipo_inicial=None):
+    def criar_campo_loc(self, widgets_linha, row_num, tipo_inicial=None):
         if tipo_inicial:
             loc_var = Tk.StringVar(value=tipo_inicial)
         else:
@@ -258,25 +258,25 @@ class MainWindow(ttk.Window):
             "write",
             lambda *args,
             widgets_linha=widgets_linha,
-            row_num=row_num: self.controller.AtualizarValor(
+            row_num=row_num: self.controller.atualizar_valor(
                 widgets_linha
             ))
 
-    def MostrarLocalidadeRelevante(self, widgets_linha, row_num):
+    def mostrar_localidade_relevante(self, widgets_linha, row_num):
         loc_irrelevante = widgets_linha["loc_irrelevante"]
         loc_frame = widgets_linha["loc_frame"]
 
         loc_irrelevante.grid_remove()
         loc_frame.grid(row=row_num, column=4, padx=5, pady=2)
 
-    def MostrarLocalidadeIrrelevante(self, widgets_linha, row_num):
+    def mostrar_localidade_irrelevante(self, widgets_linha, row_num):
         loc_irrelevante = widgets_linha["loc_irrelevante"]
         loc_frame = widgets_linha["loc_frame"]
 
         loc_frame.grid_remove()
         loc_irrelevante.grid(row=row_num, column=4, padx=5, pady=2)
 
-    def CriarCampoValor(self, widgets_linha, row_num):
+    def criar_campo_valor(self, widgets_linha, row_num):
         valor_var = Tk.StringVar(value="R$ 0,00")
         widgets_linha["valor_var"] = valor_var
 
@@ -289,16 +289,16 @@ class MainWindow(ttk.Window):
             row=row_num, column=6, padx=5, pady=2, sticky="ew"
         )
 
-    def CriarRemovedor(self, widgets_linha, row_num):
+    def criar_removedor(self, widgets_linha, row_num):
         widgets_linha["removedor"] = ttk.Button(
             self.frame_despesas,
             text="X",
             width=3,
-            command=lambda: self.controller.RemoverLinha(widgets_linha),
+            command=lambda: self.controller.remover_linha(widgets_linha),
         )
         widgets_linha["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
 
-    def RegridarWidgets(self, linhas_despesas):
+    def regridar_widgets(self, linhas_despesas):
         for index, linha in enumerate(linhas_despesas):
             row_num = index + 1
             linha['data_entry'].grid(

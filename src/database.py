@@ -19,9 +19,9 @@ class Database:
         self.conn.execute('PRAGMA foreign_keys = ON;')
         self.cursor = self.conn.cursor()
 
-        self.CriarTabelas()
+        self.criar_tabelas()
 
-    def CriarTabelas(self):
+    def criar_tabelas(self):
         gerar_tab_viagens = '''CREATE TABLE IF NOT EXISTS viagens (
             id_viagem INTEGER PRIMARY KEY AUTOINCREMENT,
             nome_viagem TEXT NOT NULL
@@ -40,8 +40,8 @@ class Database:
         self.cursor.execute(gerar_tab_despesas)
         self.conn.commit()
 
-    def AdicionarViagem(self, nome_viagem_str):
-        id_viagem = self.ObterID(nome_viagem_str)
+    def add_viagem(self, nome_viagem_str):
+        id_viagem = self.get_id(nome_viagem_str)
         if id_viagem:
             return id_viagem
         else:
@@ -54,9 +54,9 @@ class Database:
             id_viagem = self.cursor.lastrowid
             return id_viagem
 
-    def AdicionarDespesas(self, despesas_viagem, nome_viagem_str):
-        id_viagem = self.ObterID(nome_viagem_str)
-        self.RemoverDespesasViagem(id_viagem)
+    def add_despesas(self, despesas_viagem, nome_viagem_str):
+        id_viagem = self.get_id(nome_viagem_str)
+        self.del_despesas(id_viagem)
 
         sql_add_despesas = '''INSERT INTO despesas (
         data_despesa, tipo_despesa, loc_despesa, valor_despesa, id_viagem
@@ -74,7 +74,7 @@ class Database:
                 ))
         self.conn.commit()
 
-    def ObterID(self, nome_viagem):
+    def get_id(self, nome_viagem):
         sql_query_nome = '''
             SELECT id_viagem FROM viagens WHERE nome_viagem = ?;
         '''
@@ -86,7 +86,7 @@ class Database:
         else:
             return None
 
-    def ObterNomes(self):
+    def get_nome_viagens(self):
         sql_obter_nomes = '''
             SELECT nome_viagem from viagens
         '''
@@ -96,15 +96,15 @@ class Database:
         nomes = [nome[0] for nome in resultado_query]
         return nomes
 
-    def RemoverDespesasViagem(self, id_viagem):
+    def del_despesas(self, id_viagem):
         sql_delete_despesas = '''
             DELETE FROM despesas WHERE id_viagem = ?;
         '''
         self.cursor.execute(sql_delete_despesas, (id_viagem,))
         self.conn.commit()
 
-    def ObterDespesasPorNomeViagem(self, nome_viagem):
-        id_viagem = self.ObterID(nome_viagem)
+    def get_despesas_por_nome(self, nome_viagem):
+        id_viagem = self.get_id(nome_viagem)
         sql_despesas_viagem = '''
             SELECT data_despesa, tipo_despesa, loc_despesa, valor_despesa
             FROM despesas
@@ -125,8 +125,8 @@ class Database:
 
         return lista_despesas
 
-    def RemoverViagem(self, nome_viagem):
-        id_viagem = self.ObterID(nome_viagem)
+    def del_viagem(self, nome_viagem):
+        id_viagem = self.get_id(nome_viagem)
         if id_viagem:
             sql_deletar_viagem = '''
                 DELETE FROM viagens

@@ -35,14 +35,14 @@ class ConfigsWindow(Tk.Toplevel):
             sticky='ew'
         )
 
-        self.CriarLabels()
-        self.CriarEntrySM()
-        self.CriarEntrysPct('Capitais', 2)
-        self.CriarEntrysPct('Outras', 4)
+        self.criar_labels()
+        self.criar_entry_salario()
+        self.criar_entry_porcentagens('Capitais', 2)
+        self.criar_entry_porcentagens('Outras', 4)
 
-        self.protocol('WM_DELETE_WINDOW', self.Fechar)
+        self.protocol('WM_DELETE_WINDOW', self.fechar)
 
-    def CriarLabels(self):
+    def criar_labels(self):
         for index, config in enumerate(self.tipos_config[1:], 1):
             self.frame_pct.grid_rowconfigure(
                 index, weight=0
@@ -68,11 +68,11 @@ class ConfigsWindow(Tk.Toplevel):
                 justify='center',
             ).grid(row=1, column=(index+1)*2, padx=5, pady=2)
 
-    def FormatarMoeda(self, numero):
+    def formatar_moeda(self, numero):
         formatted = f'R$ {numero:,.2f}'
         return formatted.replace(',', '#').replace('.', ',').replace('#', '.')
 
-    def ValidarMoeda(self, *trace):
+    def validar_moeda(self, *trace):
         sm_str = self.sm_var.get()
         sm_num = ''.join(filter(str.isdigit, sm_str))
 
@@ -84,10 +84,10 @@ class ConfigsWindow(Tk.Toplevel):
         self.configs['Salário Mínimo'] = sm_float
 
         self.sm_var.trace_remove('write', self.trace_moeda)
-        self.sm_var.set(self.FormatarMoeda(sm_float))
-        self.trace_moeda = self.sm_var.trace_add('write', self.ValidarMoeda)
+        self.sm_var.set(self.formatar_moeda(sm_float))
+        self.trace_moeda = self.sm_var.trace_add('write', self.validar_moeda)
 
-    def CriarEntrySM(self):
+    def criar_entry_salario(self):
         sm_frame = ttk.LabelFrame(
             self.frame_configs,
             text='Salário Mínimo'
@@ -101,28 +101,32 @@ class ConfigsWindow(Tk.Toplevel):
             sticky='ew'
         )
         self.sm_var = Tk.StringVar(
-            value=self.FormatarMoeda(
+            value=self.formatar_moeda(
                 self.configs['Salário Mínimo']
             ))
-        self.trace_moeda = self.sm_var.trace_add('write', self.ValidarMoeda)
+        self.trace_moeda = self.sm_var.trace_add('write', self.validar_moeda)
 
         entry_sm = ttk.Entry(
             sm_frame,
             textvariable=self.sm_var,
             validate='all',
             validatecommand=(
-                self.register(self.ValidarAppend), '%d', '%P', '%i', '%S'
+                self.register(self.validar_append_entries),
+                '%d',
+                '%P',
+                '%i',
+                '%S'
             ),
             justify='right'
         )
         entry_sm.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        entry_sm.bind("<Button-1>", self.UltCaret)
-        entry_sm.bind("<Key>", self.UltCaret)
+        entry_sm.bind("<Button-1>", self.empurrar_caret)
+        entry_sm.bind("<Key>", self.empurrar_caret)
 
-    def FormatarPct(self, numero):
+    def formatar_porcentagens(self, numero):
         return f'{numero:.1f}'.replace('.', ',')
 
-    def ValidarPct(self, pct_var, tipo_despesa, loc_despesa):
+    def validar_porcentagens(self, pct_var, tipo_despesa, loc_despesa):
         if self.validar_pct:
             return
 
@@ -139,7 +143,7 @@ class ConfigsWindow(Tk.Toplevel):
 
         self.configs[tipo_despesa][loc_despesa] = pct_float
 
-        pct_var.set(self.FormatarPct(pct_float))
+        pct_var.set(self.formatar_porcentagens(pct_float))
 
         pct_cap = self.configs[tipo_despesa].get('Capitais', 0.0)
         pct_outras = self.configs[tipo_despesa].get('Outras', 0.0)
@@ -150,16 +154,19 @@ class ConfigsWindow(Tk.Toplevel):
 
         self.validar_pct = False
 
-    def CriarEntrysPct(self, loc, coluna):
+    def criar_entry_porcentagens(self, loc, coluna):
         for index, tipo in enumerate(list(self.configs.keys())[1:]):
             pct_var = Tk.StringVar(
-                value=self.FormatarPct(
+                value=self.formatar_porcentagens(
                     self.configs[tipo][loc]
                 ))
 
             pct_var.trace_add(
                 'write',
-                lambda *args, v=pct_var, t=tipo, c=loc: self.ValidarPct(
+                lambda *args,
+                v=pct_var,
+                t=tipo,
+                c=loc: self.validar_porcentagens(
                     v, t, c
                 ))
 
@@ -179,12 +186,16 @@ class ConfigsWindow(Tk.Toplevel):
                 justify='right',
                 validate='all',
                 validatecommand=(
-                    self.register(self.ValidarAppend), '%d', '%P', '%i', '%S'
+                    self.register(self.validar_append_entries),
+                    '%d',
+                    '%P',
+                    '%i',
+                    '%S'
                 ))
 
             pct_entry.pack(side=Tk.LEFT, padx=(0, 2))
-            pct_entry.bind("<Button-1>", self.UltCaret)
-            pct_entry.bind("<Key>", self.UltCaret)
+            pct_entry.bind("<Button-1>", self.empurrar_caret)
+            pct_entry.bind("<Key>", self.empurrar_caret)
 
             ttk.Label(
                 frame_entry,
@@ -192,18 +203,18 @@ class ConfigsWindow(Tk.Toplevel):
                 justify='left'
             ).pack(side=Tk.LEFT)
 
-    def ValidarAppend(self, action_code, current_value, index, inserted_text):
-        if action_code != '1':
+    def validar_append_entries(self, tipo_acao, valor_after, index, substring):
+        if tipo_acao != '1':
             return True
 
-        if int(index) >= len(current_value) - len(inserted_text):
+        if int(index) >= len(valor_after) - len(substring):
             return True
 
         return False
 
-    def UltCaret(self, event):
+    def empurrar_caret(self, event):
         event.widget.after_idle(event.widget.icursor, 'end')
 
-    def Fechar(self):
-        self.controller.AtualizarLinhas()
+    def fechar(self):
+        self.controller.atualizar_linhas()
         self.destroy()

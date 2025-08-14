@@ -18,12 +18,12 @@ class ReportWindow(Tk.Toplevel):
         )
         self.frame_resumo.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
 
-        self.CriarTabelaDespesas()
-        self.PreencherTabelaDespesas()
-        self.CriarTabelaTotais()
-        self.PreencherTabelaTotais()
+        self.criar_tabela_despesas()
+        self.preencher_tabela_despesas()
+        self.criar_tabela_totais()
+        self.preencher_tabela_totais()
 
-    def CriarTabelaDespesas(self):
+    def criar_tabela_despesas(self):
         columns_ids = ['data', 'tipo', 'loc', 'val']
         headers = {
             'data': 'Data',
@@ -58,7 +58,7 @@ class ReportWindow(Tk.Toplevel):
         scroll_despesas.pack(side=Tk.RIGHT, fill=Tk.Y)
         self.tabela_despesas.configure(yscrollcommand=scroll_despesas.set)
 
-    def PreencherTabelaDespesas(self):
+    def preencher_tabela_despesas(self):
         for linha in self.linhas_despesas:
             data_str = linha['data_var'].get()
             tipo_str = linha['tipo_var'].get()
@@ -76,7 +76,7 @@ class ReportWindow(Tk.Toplevel):
                     valor_float
                 ))
 
-    def CriarTabelaTotais(self):
+    def criar_tabela_totais(self):
         frame_totais = ttk.LabelFrame(
             self.frame_resumo,
             text='Totais',
@@ -110,7 +110,7 @@ class ReportWindow(Tk.Toplevel):
             self.tabela_totais.heading(f'{col}', text=f'{headers[col]}')
             self.tabela_totais.column(col, width=150, anchor='center')
 
-    def PreencherTabelaTotais(self):
+    def preencher_tabela_totais(self):
         lanche_total = 0.0
         manha_total = 0.0
         almoco_total = 0.0
