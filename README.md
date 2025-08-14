@@ -56,10 +56,3 @@ O projeto segue uma arquitetura em camadas, separando a interface do usuário (V
         ```bash
         python main.py
         ```
-
-## 5. Possíveis Melhorias (v2)
-
-- Implementar uma suíte de testes unitários.
-- Adicionar funcionalidade para importar/exportar dados para Excel/CSV.
-- Aprimorar o tratamento de exceções.
-- Adicionar documentação interna (docstrings) ao código.
