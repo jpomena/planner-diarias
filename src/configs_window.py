@@ -7,8 +7,9 @@ class ConfigsWindow(Tk.Toplevel):
         super().__init__(master)
         self.master = master
         self.controller = controller
-        self.configs = configs
+        self.configs = self.controller.configs
         self.tipos_config = list(self.configs.keys())
+        self.validar_pct = False
 
         self.title("Configurações")
         self.geometry("400x400")
@@ -36,8 +37,8 @@ class ConfigsWindow(Tk.Toplevel):
 
         self.CriarLabels()
         self.CriarEntrySM()
-        self.CriarEntrysCapitais()
-        self.CriarEntrysOutras()
+        self.CriarEntrysPct('Capitais', 2)
+        self.CriarEntrysPct('Outras', 4)
 
         self.protocol('WM_DELETE_WINDOW', self.Fechar)
 
@@ -108,14 +109,24 @@ class ConfigsWindow(Tk.Toplevel):
         entry_sm = ttk.Entry(
             sm_frame,
             textvariable=self.sm_var,
+            validate='all',
+            validatecommand=(
+                self.register(self.ValidarAppend), '%d', '%P', '%i', '%S'
+            ),
             justify='right'
         )
         entry_sm.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        entry_sm.bind("<Button-1>", self.UltCaret)
+        entry_sm.bind("<Key>", self.UltCaret)
 
     def FormatarPct(self, numero):
         return f'{numero:.1f}'.replace('.', ',')
 
-    def ValidarPctCapitais(self, tipo, pct_var, trace_pct_cap, *trace):
+    def ValidarPct(self, pct_var, tipo_despesa, loc_despesa):
+        if self.validar_pct:
+            return
+
+        self.validar_pct = True
         pct_str = pct_var.get()
         pct_num = ''.join(filter(str.isdigit, pct_str))
 
@@ -123,119 +134,75 @@ class ConfigsWindow(Tk.Toplevel):
             pct_float = 0.0
         else:
             pct_float = int(pct_num)/10
-        self.configs[tipo]['Capitais'] = pct_float
+        if pct_float > 100.0:
+            pct_float = 100.0
 
-        pct_var.trace_remove('write', self.trace_pct_cap)
+        self.configs[tipo_despesa][loc_despesa] = pct_float
+
         pct_var.set(self.FormatarPct(pct_float))
-        self.trace_pct_cap = pct_var.trace_add(
-            'write', lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_cap:
-            self.ValidarPctCapitais(t, p, tp, *args)
-        )
 
-    def CriarEntrysCapitais(self):
-        for index, tipo in enumerate(list(self.configs.keys())[1:]):
-            pct_var = Tk.StringVar(
-                value=self.FormatarPct(
-                    self.configs[tipo]['Capitais']
-                ))
-            setattr(
-                self,
-                f'pct_var_{tipo}',
-                pct_var
-            )
-
-            self.trace_pct_cap = pct_var.trace_add(
-                'write', lambda *args, t=tipo, p=pct_var, trace_pct=None:
-                self.ValidarPctCapitais(t, p, trace_pct, *args)
-            )
-            pct_var.trace_add(
-                'write',
-                lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_cap:
-                self.ValidarPctCapitais(t, p, tp, *args)
-            )
-
-            frame_entry = ttk.Frame(self.frame_pct)
-            frame_entry.grid(
-                row=index+2,
-                column=2,
-                padx=5,
-                pady=2,
-                sticky='ew'
-            )
-
-            ttk.Entry(
-                frame_entry,
-                textvariable=pct_var,
-                width=5,
-                justify='right'
-            ).pack(side=Tk.LEFT, padx=(0, 2))
-
-            ttk.Label(
-                frame_entry,
-                text='%',
-                justify='left'
-            ).pack(side=Tk.LEFT)
-
-    def ValidarPctOutras(self, tipo, pct_var, trace_pct_out, *trace):
-        pct_str = pct_var.get()
-        pct_num = ''.join(filter(str.isdigit, pct_str))
-
-        if not pct_num:
-            pct_float = 0.0
+        pct_cap = self.configs[tipo_despesa].get('Capitais', 0.0)
+        pct_outras = self.configs[tipo_despesa].get('Outras', 0.0)
+        if pct_cap == pct_outras:
+            self.configs[tipo_despesa]['Irrelevante'] = pct_cap
         else:
-            pct_float = int(pct_num)/10
-        self.configs[tipo]['Outras'] = pct_float
+            self.configs[tipo_despesa]['Irrelevante'] = 0.0
 
-        pct_var.trace_remove('write', self.trace_pct_out)
-        pct_var.set(self.FormatarPct(pct_float))
-        self.trace_pct_out = pct_var.trace_add(
-            'write', lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_out:
-            self.ValidarPctOutras(t, p, tp, *args)
-        )
+        self.validar_pct = False
 
-    def CriarEntrysOutras(self):
+    def CriarEntrysPct(self, loc, coluna):
         for index, tipo in enumerate(list(self.configs.keys())[1:]):
             pct_var = Tk.StringVar(
                 value=self.FormatarPct(
-                    self.configs[tipo]['Outras']
+                    self.configs[tipo][loc]
                 ))
-            setattr(
-                self,
-                f'pct_var_{tipo}',
-                pct_var
-            )
 
-            self.trace_pct_out = pct_var.trace_add(
-                'write', lambda *args, t=tipo, p=pct_var, trace_pct=None:
-                self.ValidarPctOutras(t, p, trace_pct, *args)
-            )
             pct_var.trace_add(
                 'write',
-                lambda *args, t=tipo, p=pct_var, tp=self.trace_pct_out:
-                self.ValidarPctOutras(t, p, tp, *args)
-            )
+                lambda *args, v=pct_var, t=tipo, c=loc: self.ValidarPct(
+                    v, t, c
+                ))
 
             frame_entry = ttk.Frame(self.frame_pct)
             frame_entry.grid(
                 row=index+2,
-                column=4,
+                column=coluna,
                 padx=5,
                 pady=2,
                 sticky='ew'
             )
 
-            ttk.Entry(
+            pct_entry = ttk.Entry(
                 frame_entry,
                 textvariable=pct_var,
                 width=5,
-                justify='right'
-            ).pack(side=Tk.LEFT, padx=(0, 2))
+                justify='right',
+                validate='all',
+                validatecommand=(
+                    self.register(self.ValidarAppend), '%d', '%P', '%i', '%S'
+                ))
+
+            pct_entry.pack(side=Tk.LEFT, padx=(0, 2))
+            pct_entry.bind("<Button-1>", self.UltCaret)
+            pct_entry.bind("<Key>", self.UltCaret)
 
             ttk.Label(
                 frame_entry,
                 text='%',
                 justify='left'
             ).pack(side=Tk.LEFT)
+
+    def ValidarAppend(self, action_code, current_value, index, inserted_text):
+        if action_code != '1':
+            return True
+
+        if int(index) >= len(current_value) - len(inserted_text):
+            return True
+
+        return False
+
+    def UltCaret(self, event):
+        event.widget.after_idle(event.widget.icursor, 'end')
 
     def Fechar(self):
         self.controller.AtualizarLinhas()

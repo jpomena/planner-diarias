@@ -65,8 +65,14 @@ class Sasori():
         self.linhas_despesas.append(widgets_linha)
 
     def MostrarLocalidade(self, widgets_linha, row_num):
-        tipo_var_str = widgets_linha["tipo_var"]
-        if (tipo_var_str == "Janta" or tipo_var_str == "Almoço"):
+        tipo_str = widgets_linha["tipo_var"].get()
+        if not tipo_str or tipo_str not in self.configs:
+            self.mw.MostrarLocalidadeIrrelevante(widgets_linha, row_num)
+            return
+        pct_capitais = self.configs[tipo_str]['Capitais']
+        pct_outras = self.configs[tipo_str]['Outras']
+
+        if pct_capitais != pct_outras:
             self.mw.MostrarLocalidadeRelevante(widgets_linha, row_num)
         else:
             self.mw.MostrarLocalidadeIrrelevante(widgets_linha, row_num)
@@ -97,7 +103,8 @@ class Sasori():
         ReportWindow(self.mw, self.linhas_despesas)
 
     def AtualizarLinhas(self):
-        for linha in self.linhas_despesas:
+        for i, linha in enumerate(self.linhas_despesas):
+            self.MostrarLocalidade(linha, i+1)
             self.AtualizarValor(linha)
 
     def AbrirViagemWindow(self):
@@ -135,7 +142,10 @@ class Sasori():
             valor_float = float(
                 valor_str.replace('R$ ', '').replace('.', '').replace(',', '.')
             )
-            if tipo_str != 'Almoço' and tipo_str != 'Janta':
+            pct_capitais = self.configs[tipo_str]['Capitais']
+            pct_outras = self.configs[tipo_str]['Outras']
+
+            if pct_capitais == pct_outras:
                 loc_str = 'Irrelevante'
             despesa = {
                 'data': data_str,

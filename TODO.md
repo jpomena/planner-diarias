@@ -1,13 +1,13 @@
 # Lista de Tarefas - Planner de Diárias
 
 ### Refatoração Crítica (Prioridade Alta)
-- [ ] **Corrigir `traces` em `src/configs_window.py`:**
-  - [ ] Unificar `CriarEntrysCapitais` e `CriarEntrysOutras` em um único método `CriarEntrysPercentuais(self, tipo_localidade, column)`.
-  - [ ] Unificar `ValidarPctCapitais` e `ValidarPctOutras` em `ValidarPct(...)`.
-  - [ ] Implementar a lógica correta de `trace_id` para cada `StringVar`, armazenando o ID na instância `self` (`setattr`) e usando-o para remover (`trace_remove`) o trace antes de cada atualização e recriá-lo depois.
+- [X] **Corrigir `traces` em `src/configs_window.py`:**
+  - [X] Unificar `CriarEntrysCapitais` e `CriarEntrysOutras` em um único método `CriarEntrysPercentuais(self, tipo_localidade, column)`.
+  - [X] Unificar `ValidarPctCapitais` e `ValidarPctOutras` em `ValidarPct(...)`.
+  - [X] Implementar a lógica correta de `trace_id` para cada `StringVar`, armazenando o ID na instância `self` (`setattr`) e usando-o para remover (`trace_remove`) o trace antes de cada atualização e recriá-lo depois.
 
-- [ ] **Corrigir bug em `src/controller.py`:**
-  - [ ] No método `MostrarLocalidade`, a linha `tipo_var_str = widgets_linha["tipo_var"]` está incorreta. Corrigir para `tipo_var_str = widgets_linha["tipo_var"].get()` para obter o valor da `StringVar`.
+- [X] **Corrigir bug em `src/controller.py`:**
+  - [X] No método `MostrarLocalidade`, a linha `tipo_var_str = widgets_linha["tipo_var"]` está incorreta. Corrigir para `tipo_var_str = widgets_linha["tipo_var"].get()` para obter o valor da `StringVar`.
 
 ### Melhorias e Qualidade do Código (Prioridade Média)
 - [ ] **Refatorar `src/viagens_window.py`:**
