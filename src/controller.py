@@ -3,8 +3,7 @@ from .database import Database
 from .main_window import MainWindow
 from .configs_window import ConfigsWindow
 from .report_window import ReportWindow
-from .viagens_window import AbrirWindow
-from .viagens_window import ApagarWindow
+from .viagens_window import WindowViagem
 
 
 class Sasori():
@@ -107,8 +106,9 @@ class Sasori():
             self.atualizar_loc(linha, i+1)
             self.atualizar_valor(linha)
 
-    def abrir_viagem_window(self):
-        AbrirWindow(self.mw, self, self.carregar_viagem)
+    def viagem_window_open(self):
+        obj = 'open'
+        WindowViagem(self.mw, self, obj, self.carregar_viagem)
 
     def carregar_viagem(self, nome_viagem):
         self.nome_viagem.set(nome_viagem)
@@ -162,5 +162,6 @@ class Sasori():
         )
         self.mw.aviso(info)
 
-    def apagar_viagem(self):
-        ApagarWindow(self.mw, self)
+    def viagem_window_del(self):
+        obj = 'del'
+        WindowViagem(self.mw, self, obj)

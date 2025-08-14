@@ -94,7 +94,7 @@ class MainWindow(ttk.Window):
         self.botao_abrir_viagem = ttk.Button(
             frame_sql,
             text='Abrir Viagem',
-            command=self.controller.abrir_viagem_window
+            command=self.controller.viagem_window_open
         )
         self.botao_fechar_viagem = ttk.Button(
             frame_sql,
@@ -109,7 +109,7 @@ class MainWindow(ttk.Window):
         self.botao_del_viagem = ttk.Button(
             frame_sql,
             text='Apagar Viagem',
-            command=self.controller.apagar_viagem
+            command=self.controller.viagem_window_del
         )
 
         self.botao_abrir_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
