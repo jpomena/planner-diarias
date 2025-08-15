@@ -113,7 +113,7 @@ class Database:
         self.cursor.execute(sql_despesas_viagem, (id_viagem,))
         resultados = self.cursor.fetchall()
 
-        lista_despesas = []
+        despesas_viagem = []
         for resultado in resultados:
             dados_despesa = {
                 'data': resultado[0],
@@ -121,9 +121,9 @@ class Database:
                 'loc': resultado[2],
                 'valor': resultado[3]
             }
-            lista_despesas.append(dados_despesa)
+            despesas_viagem.append(dados_despesa)
 
-        return lista_despesas
+        return despesas_viagem
 
     def del_viagem(self, nome_viagem):
         id_viagem = self.get_id(nome_viagem)

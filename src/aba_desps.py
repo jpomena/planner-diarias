@@ -7,12 +7,12 @@ class AbaDespesas:
     def __init__(self, frame_pai, controller):
         self.frame_pai = frame_pai
         self.controller = controller
-        self.configs = self.controller.configs
+        self.configs = self.controller.configs_despesas
         self.tipos_despesa = self.controller.tipos_despesa
 
         self.linhas_despesas = []
 
-    def criar_frame_despesas(self):
+    def criar_frame_aba(self):
         canvas = ttk.Canvas(self.frame_pai)
         scrollbar = ttk.Scrollbar(
             self.frame_pai, orient="vertical", command=canvas.yview
@@ -69,6 +69,32 @@ class AbaDespesas:
                     self.frame_despesas,
                     orient="vertical",
                 ).grid(row=0, column=col * 2 + 1, sticky="ns")
+
+    def criar_linha(self, despesa_viagem=None):
+        if despesa_viagem:
+            data_inicial = despesa_viagem['data']
+            tipo_inicial = despesa_viagem['tipo']
+            loc_inicial = despesa_viagem['loc']
+        else:
+            data_inicial = None
+            tipo_inicial = None
+            loc_inicial = None
+
+        widgets_linha = {}
+        row_num = len(self.linhas_despesas) + 1
+        self.criar_campo_data(
+            widgets_linha, row_num, data_inicial
+        )
+        self.criar_campo_tipo(
+            widgets_linha, row_num, tipo_inicial
+        )
+        self.criar_campo_loc(widgets_linha, row_num, loc_inicial)
+        self.criar_campo_valor(widgets_linha, row_num)
+        self.atualizar_loc(widgets_linha, row_num)
+        self.atualizar_valor(widgets_linha)
+        self.criar_removedor(widgets_linha, row_num)
+
+        self.linhas_despesas.append(widgets_linha)
 
     def criar_campo_data(self, widgets_linha, row_num, data_inicial=None):
         if data_inicial:
@@ -250,32 +276,6 @@ class AbaDespesas:
         else:
             self.mostrar_localidade_irrelevante(widgets_linha, row_num)
 
-    def criar_linha(self, despesa_viagem=None):
-        if despesa_viagem:
-            data_inicial = despesa_viagem['data']
-            tipo_inicial = despesa_viagem['tipo']
-            loc_inicial = despesa_viagem['loc']
-        else:
-            data_inicial = None
-            tipo_inicial = None
-            loc_inicial = None
-
-        widgets_linha = {}
-        row_num = len(self.linhas_despesas) + 1
-        self.criar_campo_data(
-            widgets_linha, row_num, data_inicial
-        )
-        self.criar_campo_tipo(
-            widgets_linha, row_num, tipo_inicial
-        )
-        self.criar_campo_loc(widgets_linha, row_num, loc_inicial)
-        self.criar_campo_valor(widgets_linha, row_num)
-        self.atualizar_loc(widgets_linha, row_num)
-        self.atualizar_valor(widgets_linha)
-        self.criar_removedor(widgets_linha, row_num)
-
-        self.linhas_despesas.append(widgets_linha)
-
     def atualizar_valor(self, widgets_linha):
         tipo = widgets_linha["tipo_var"].get()
         loc = widgets_linha["loc_var"].get()
@@ -301,16 +301,14 @@ class AbaDespesas:
             self.atualizar_valor(linha)
 
     def carregar_despesas(self, despesas_viagem):
-        for linha in list(self.linhas_despesas):
-            self.remover_linha(linha)
-
         for despesa in despesas_viagem:
             self.criar_linha(despesa)
 
-    def fechar_despesas(self):
+    def fechar_despesas(self, obj=None):
         for linha in list(self.linhas_despesas):
             self.remover_linha(linha)
-        self.criar_linha()
+        if not obj:
+            self.criar_linha()
 
     def dados_despesas(self):
         despesas_viagem = []

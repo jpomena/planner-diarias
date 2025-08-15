@@ -5,7 +5,7 @@ import ttkbootstrap as ttk
 class ConfigsWindow(Tk.Toplevel):
     def __init__(self, master, controller, configs):
         super().__init__(master)
-        self.master = master
+        self.mw = master
         self.controller = controller
         self.configs = self.controller.configs
         self.tipos_config = list(self.configs.keys())
@@ -216,5 +216,5 @@ class ConfigsWindow(Tk.Toplevel):
         event.widget.after_idle(event.widget.icursor, 'end')
 
     def fechar(self):
-        self.controller.atualizar_linhas()  # FIXME
+        self.mw.atualizar_abas()
         self.destroy()

@@ -2,6 +2,7 @@ import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
 from .aba_desps import AbaDespesas
+from .aba_gas import AbaGas
 
 
 class MainWindow(ttk.Window):
@@ -29,7 +30,9 @@ class MainWindow(ttk.Window):
 
     def criar_frame_nome(self, nome_viagem=None):
         if not nome_viagem:
-            nome_viagem = Tk.StringVar()
+            self.nome_viagem = Tk.StringVar()
+        else:
+            self.nome_viagem = Tk.StringVar(value=nome_viagem)
         self.frame_nome = ttk.LabelFrame(
             self.frame_topo,
             text='Nome da Viagem',
@@ -45,7 +48,7 @@ class MainWindow(ttk.Window):
 
         entry_nome = ttk.Entry(
             self.frame_nome,
-            textvariable=nome_viagem
+            textvariable=self.nome_viagem
         )
         entry_nome.pack(fill=Tk.X, expand=True, padx=5, pady=2)
 
@@ -106,7 +109,7 @@ class MainWindow(ttk.Window):
         self.botao_add_viagem = ttk.Button(
             frame_sql,
             text='Salvar Viagem',
-            command=self.controller.salvar_viagem
+            command=lambda: self.controller.salvar_viagem(self.nome_viagem)
         )
         self.botao_del_viagem = ttk.Button(
             frame_sql,
@@ -127,12 +130,23 @@ class MainWindow(ttk.Window):
         frame_pai_despesas = ttk.Frame(self.frame_0)
         self.notebook.add(frame_pai_despesas, text='Despesas')
         self.aba_despesas = AbaDespesas(frame_pai_despesas, self.controller)
-        self.aba_despesas.criar_frame_despesas()
+        self.aba_despesas.criar_frame_aba()
         self.aba_despesas.criar_headers()
         self.aba_despesas.criar_linha()
+
+    def criar_aba_gas(self):
+        frame_pai_gas = ttk.Frame(self.frame_0)
+        self.notebook.add(frame_pai_gas, text='Aluguel de Carro')
+        self.aba_gas = AbaGas(frame_pai_gas, self.controller)
+        self.aba_gas.criar_frame_aba()
+        self.aba_gas.criar_headers()
+        self.aba_gas.criar_linha()
 
     def carregar_despesas(self, despesas_viagem):
         self.aba_despesas.carregar_despesas(despesas_viagem)
 
-    def fechar_despesas(self):
-        self.aba_despesas.fechar_despesas()
+    def fechar_despesas(self, obj=None):
+        self.aba_despesas.fechar_despesas(obj)
+
+    def atualizar_abas(self):
+        self.aba_despesas.atualizar_desps()
