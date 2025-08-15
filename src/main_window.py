@@ -1,7 +1,7 @@
 import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
-from datetime import datetime
+from .aba_desps import AbaDespesas
 
 
 class MainWindow(ttk.Window):
@@ -27,7 +27,9 @@ class MainWindow(ttk.Window):
     def aviso(self, info):
         messagebox.showinfo(info[0], info[1])
 
-    def criar_frame_nome(self, nome_viagem):
+    def criar_frame_nome(self, nome_viagem=None):
+        if not nome_viagem:
+            nome_viagem = Tk.StringVar()
         self.frame_nome = ttk.LabelFrame(
             self.frame_topo,
             text='Nome da Viagem',
@@ -68,7 +70,7 @@ class MainWindow(ttk.Window):
         self.botao_add_linha = ttk.Button(
             frame_botoes,
             text="Adicionar Linha",
-            command=self.controller.criar_linha
+            command=self.aba_despesas.criar_linha
         )
         self.botao_report = ttk.Button(
             frame_botoes,
@@ -117,232 +119,20 @@ class MainWindow(ttk.Window):
         self.botao_add_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
         self.botao_del_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
 
-    def criar_frame_despesas(self):
-        container = ttk.LabelFrame(
-            self.frame_0, text="Despesas", padding=5
-        )
-        container.pack(fill=Tk.BOTH, expand=True, anchor='n')
+    def criar_notebook(self):
+        self.notebook = ttk.Notebook(self.frame_0)
+        self.notebook.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
 
-        canvas = ttk.Canvas(container)
-        scrollbar = ttk.Scrollbar(
-            container, orient="vertical", command=canvas.yview
-        )
+    def criar_aba_despesas(self):
+        frame_pai_despesas = ttk.Frame(self.frame_0)
+        self.notebook.add(frame_pai_despesas, text='Despesas')
+        self.aba_despesas = AbaDespesas(frame_pai_despesas, self.controller)
+        self.aba_despesas.criar_frame_despesas()
+        self.aba_despesas.criar_headers()
+        self.aba_despesas.criar_linha()
 
-        scrollbar.pack(side="right", fill="y")
-        canvas.pack(side='left', fill='both', expand=True)
+    def carregar_despesas(self, despesas_viagem):
+        self.aba_despesas.carregar_despesas(despesas_viagem)
 
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        self.frame_despesas = ttk.Frame(canvas)
-        frame_id = canvas.create_window(
-            (0, 0), window=self.frame_despesas, anchor="nw"
-        )
-
-        def centralizar_frame(event):
-            canvas_width = event.width
-            frame_width = self.frame_despesas.winfo_reqwidth()
-            x_pos = (canvas_width - frame_width) // 2
-            canvas.coords(frame_id, x_pos if x_pos > 0 else 0, 0)
-
-        def redimensionar_frame(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-
-        self.frame_despesas.bind("<Configure>", redimensionar_frame)
-        canvas.bind("<Configure>", centralizar_frame)
-
-        def rolar_mouse(event):
-            if event.num == 5 or event.delta == -120:
-                canvas.yview_scroll(1, "units")
-            if event.num == 4 or event.delta == 120:
-                canvas.yview_scroll(-1, "units")
-
-        for widget in [canvas, self.frame_despesas]:
-            widget.bind("<MouseWheel>", rolar_mouse)
-            widget.bind("<Button-4>", rolar_mouse)
-            widget.bind("<Button-5>", rolar_mouse)
-
-    def criar_headers(self):
-        headers = ["Data", "Tipo", "Localidade", "Valor", ""]
-        col_dados = len(headers)
-        for col in range(5):
-            self.frame_despesas.grid_columnconfigure(col * 2, weight=0)
-
-        for col, header in enumerate(headers):
-            ttk.Label(
-                self.frame_despesas,
-                text=header,
-                anchor="center",
-                font=("Helvetica", 10, "bold"),
-            ).grid(row=0, column=col * 2, padx=5, pady=2, sticky="ew")
-            if col < col_dados - 1:
-                ttk.Separator(
-                    self.frame_despesas,
-                    orient="vertical",
-                ).grid(row=0, column=col * 2 + 1, sticky="ns")
-
-    def criar_campo_data(self, widgets_linha, row_num, data_inicial=None):
-        if data_inicial:
-            data_inicial_datetime = datetime.strptime(data_inicial, '%d/%m/%Y')
-            data_entry = ttk.DateEntry(
-                self.frame_despesas,
-                dateformat="%d/%m/%Y",
-                startdate=data_inicial_datetime
-            )
-
-        else:
-            data_entry = ttk.DateEntry(
-                self.frame_despesas,
-                dateformat="%d/%m/%Y",
-                startdate=datetime.now()
-            )
-        widgets_linha["data_entry"] = data_entry
-        widgets_linha["data_var"] = data_entry.entry
-        data_entry.grid(
-            row=row_num,
-            column=0,
-            padx=5,
-            pady=2,
-            sticky="ew"
-        )
-
-    def criar_campo_tipo(self, widgets_linha, row_num, tipo_inicial=None):
-        if tipo_inicial:
-            tipo_var = Tk.StringVar(value=tipo_inicial)
-        else:
-            tipo_var = Tk.StringVar()
-        widgets_linha['tipo_var'] = tipo_var
-
-        widgets_linha['tipo_combobox'] = ttk.Combobox(
-            self.frame_despesas,
-            textvariable=tipo_var,
-            values=self.controller.tipos_despesa,
-            state="readonly",
-        )
-        widgets_linha["tipo_combobox"].grid(
-            row=row_num,
-            column=2,
-            padx=5,
-            pady=2,
-            sticky="ew",
-        )
-
-        widgets_linha["tipo_combobox"].bind(
-            "<<ComboboxSelected>>",
-            lambda event, widgets_linha=widgets_linha, row_num=row_num: (
-                self.controller.atualizar_loc(widgets_linha, row_num),
-                self.controller.atualizar_valor(widgets_linha),
-            ))
-
-    def criar_campo_loc(self, widgets_linha, row_num, tipo_inicial=None):
-        if tipo_inicial:
-            loc_var = Tk.StringVar(value=tipo_inicial)
-        else:
-            loc_var = Tk.StringVar(value='Irrelevante')
-        loc_frame = ttk.Frame(self.frame_despesas)
-        widgets_linha["loc_frame"] = loc_frame
-        widgets_linha["loc_irrelevante"] = ttk.Label(
-            self.frame_despesas,
-            text="Irrelevante",
-            anchor="center",
-            width="20"
-        )
-        ttk.Radiobutton(
-            loc_frame, text="Capitais", value="Capitais", variable=loc_var
-        ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
-        ttk.Radiobutton(
-            loc_frame, text="Outras", value="Outras", variable=loc_var
-        ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
-
-        widgets_linha["loc_var"] = loc_var
-        loc_var.trace_add(
-            "write",
-            lambda *args,
-            widgets_linha=widgets_linha,
-            row_num=row_num: self.controller.atualizar_valor(
-                widgets_linha
-            ))
-
-    def mostrar_localidade_relevante(self, widgets_linha, row_num):
-        loc_irrelevante = widgets_linha["loc_irrelevante"]
-        loc_frame = widgets_linha["loc_frame"]
-
-        loc_irrelevante.grid_remove()
-        loc_frame.grid(row=row_num, column=4, padx=5, pady=2)
-
-    def mostrar_localidade_irrelevante(self, widgets_linha, row_num):
-        loc_irrelevante = widgets_linha["loc_irrelevante"]
-        loc_frame = widgets_linha["loc_frame"]
-
-        loc_frame.grid_remove()
-        loc_irrelevante.grid(row=row_num, column=4, padx=5, pady=2)
-
-    def criar_campo_valor(self, widgets_linha, row_num):
-        valor_var = Tk.StringVar(value="R$ 0,00")
-        widgets_linha["valor_var"] = valor_var
-
-        widgets_linha["valor_label"] = ttk.Label(
-            self.frame_despesas,
-            textvariable=widgets_linha["valor_var"],
-            anchor="e"
-        )
-        widgets_linha["valor_label"].grid(
-            row=row_num, column=6, padx=5, pady=2, sticky="ew"
-        )
-
-    def criar_removedor(self, widgets_linha, row_num):
-        widgets_linha["removedor"] = ttk.Button(
-            self.frame_despesas,
-            text="X",
-            width=3,
-            command=lambda: self.controller.remover_linha(widgets_linha),
-        )
-        widgets_linha["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
-
-    def regridar_widgets(self, linhas_despesas):
-        for index, linha in enumerate(linhas_despesas):
-            row_num = index + 1
-            linha['data_entry'].grid(
-                row=row_num,
-                column=0,
-                padx=5,
-                pady=2,
-                sticky="ew"
-            )
-            linha['tipo_combobox'].grid(
-                row=row_num,
-                column=2,
-                padx=5,
-                pady=2,
-                sticky="ew"
-            )
-
-            if linha['tipo_var'].get() in ["Almoço", "Janta"]:
-                linha['loc_irrelevante'].grid_remove()
-                linha['loc_frame'].grid(
-                    row=row_num,
-                    column=4,
-                    padx=5,
-                    pady=2
-                )
-            else:
-                linha['loc_frame'].grid_remove()
-                linha['loc_irrelevante'].grid(
-                    row=row_num,
-                    column=4,
-                    padx=5,
-                    pady=2
-                )
-
-            linha['valor_label'].grid(
-                row=row_num,
-                column=6,
-                padx=5,
-                pady=2,
-                sticky="ew"
-            )
-            linha['removedor'].grid(
-                row=row_num,
-                column=8,
-                padx=25,
-                pady=2
-            )
+    def fechar_despesas(self):
+        self.aba_despesas.fechar_despesas()

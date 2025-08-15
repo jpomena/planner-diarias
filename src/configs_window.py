@@ -216,5 +216,5 @@ class ConfigsWindow(Tk.Toplevel):
         event.widget.after_idle(event.widget.icursor, 'end')
 
     def fechar(self):
-        self.controller.atualizar_linhas()
+        self.controller.atualizar_linhas()  # FIXME
         self.destroy()
