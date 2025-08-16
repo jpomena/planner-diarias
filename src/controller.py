@@ -43,8 +43,8 @@ class Sasori():
         self.mw.criar_botoes_controle()
         self.mw.criar_botoes_sql()
 
-    def abrir_configs(self):
-        ConfigsWindow(self.mw, self, self.configs_despesas)
+    def abrir_configs(self, tipo_config):
+        ConfigsWindow(self.mw, self, tipo_config)
 
     def gerar_report(self):
         linhas_despesas = self.mw.aba_despesas.dados_despesas()

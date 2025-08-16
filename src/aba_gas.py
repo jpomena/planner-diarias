@@ -68,23 +68,26 @@ class AbaGas:
             destino_inicial = None
             dist_inicial = None
 
-        widgets_linha = {}
-        dados_linha = {
+        linha = {}
+        linha = {
             'data_var': data_inicial,
             'destino_var': destino_inicial,
             'dist_var': dist_inicial
         }
         row_num = len(self.linhas_gas) + 1
 
-        self.criar_campo_data(widgets_linha, row_num, dados_linha)
-        self.criar_campo_destino(widgets_linha, row_num, dados_linha)
-        self.criar_campo_dist(widgets_linha, row_num, dados_linha)
-        self.criar_campo_valor(widgets_linha, row_num, dados_linha)
+        self.criar_campo_data(linha, row_num)
+        self.criar_campo_destino(linha, row_num)
+        self.criar_campo_dist(linha, row_num)
+        self.criar_campo_valor(linha, row_num)
+        self.criar_removedor(linha, row_num)
 
-    def criar_campo_data(self, widgets_linha, row_num, dados_linha):
-        if dados_linha['data_var']:
+        self.linhas_gas.append(linha)
+
+    def criar_campo_data(self, linha, row_num):
+        if linha['data_var']:
             data_inicial_datetime = datetime.strptime(
-                dados_linha['data_var'], '%d/%m/%Y'
+                linha['data_var'], '%d/%m/%Y'
             )
             data_entry = ttk.DateEntry(
                 self.frame_gas,
@@ -98,8 +101,8 @@ class AbaGas:
                 dateformat="%d/%m/%Y",
                 startdate=datetime.now()
             )
-        widgets_linha["data_entry"] = data_entry
-        dados_linha["data_var"] = data_entry.entry
+        linha["data_entry"] = data_entry
+        linha["data_var"] = data_entry.entry
         data_entry.grid(
             row=row_num,
             column=0,
@@ -108,9 +111,9 @@ class AbaGas:
             sticky="ew"
         )
 
-    def criar_campo_destino(self, widgets_linha, row_num, dados_linha):
-        if dados_linha['destino_var']:
-            destino = Tk.StringVar(value=dados_linha['destino_var'])
+    def criar_campo_destino(self, linha, row_num):
+        if linha['destino_var']:
+            destino = Tk.StringVar(value=linha['destino_var'])
         else:
             destino = Tk.StringVar()
 
@@ -125,19 +128,19 @@ class AbaGas:
             pady=2,
             sticky='ew'
         )
-        widgets_linha['destino_entry'] = destino_entry
-        dados_linha['destino_var'] = destino.get()
+        linha['destino_entry'] = destino_entry
+        linha['destino_var'] = destino.get()
 
-    def criar_campo_dist(self, widgets_linha, row_num, dados_linha):
-        if dados_linha['dist_var']:
-            dist = Tk.StringVar(valur=dados_linha['dist_var'])
+    def criar_campo_dist(self, linha, row_num):
+        if linha['dist_var']:
+            dist = Tk.StringVar(value=linha['dist_var'])
         else:
             dist = Tk.StringVar()
 
         frame_dist = ttk.Frame(
             self.frame_gas
         )
-        widgets_linha['frame_dist'] = frame_dist
+        linha['frame_dist'] = frame_dist
         frame_dist.grid(
             row=row_num,
             column=4,
@@ -146,12 +149,12 @@ class AbaGas:
             frame_dist,
             textvariable=dist
         )
-        widgets_linha['dist_entry'] = dist_entry
+        linha['dist_entry'] = dist_entry
         km_label = ttk.Label(
             frame_dist,
             text='km'
         )
-        widgets_linha['km_label'] = km_label
+        linha['km_label'] = km_label
         dist_entry.pack(
             side=Tk.LEFT,
             fill=Tk.BOTH,
@@ -169,12 +172,12 @@ class AbaGas:
         except ValueError:
             dist_float = 0.0
 
-        dados_linha['dist'] = dist_float
+        linha['dist'] = dist_float
 
-    def criar_campo_valor(self, widgets_linha, row_num, dados_linha):
+    def criar_campo_valor(self, linha, row_num):
         consumo = self.configs.get('consumo', 0.0)
         custo_gas = self.configs.get('custo_gas', 0.0)
-        dist = dados_linha.get('dist', 0.0)
+        dist = linha.get('dist', 0.0)
         valor = (custo_gas * dist) / (consumo)
         valor_entry = ttk.Label(
             self.frame_gas,
@@ -186,4 +189,19 @@ class AbaGas:
             padx=5,
             pady=2
         )
-        widgets_linha['valor_entry'] = valor_entry
+        linha['valor_entry'] = valor_entry
+
+    def criar_removedor(self, linha, row_num):
+        linha["removedor"] = ttk.Button(
+            self.frame_gas,
+            text="X",
+            width=3,
+            command=lambda: self.remover_linha(linha)
+        )
+        linha["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
+
+    def remover_linha(self, linha):
+        for item in list(linha.values()):
+            if isinstance(item, Tk.Widget):
+                item.destroy()
+        self.linhas_gas.remove(linha)

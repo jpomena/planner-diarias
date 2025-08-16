@@ -67,6 +67,7 @@ class MainWindow(ttk.Window):
         )
 
     def criar_botoes_controle(self):
+        self.tipo_config = 'despesas'
         frame_botoes = ttk.Frame(self.frame_controle)
         frame_botoes.pack(expand=True, anchor='center')
 
@@ -83,7 +84,7 @@ class MainWindow(ttk.Window):
         self.botao_configs = ttk.Button(
             frame_botoes,
             text="Configurações",
-            command=self.controller.abrir_configs
+            command=lambda: self.controller.abrir_configs(self.tipo_config)
         )
 
         self.botao_add_linha.pack(side=Tk.LEFT, padx=5, pady=4)
@@ -125,6 +126,7 @@ class MainWindow(ttk.Window):
     def criar_notebook(self):
         self.notebook = ttk.Notebook(self.frame_0)
         self.notebook.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
+        self.notebook.bind("<<NotebookTabChanged>>", self.trocar_aba)
 
     def criar_aba_despesas(self):
         frame_pai_despesas = ttk.Frame(self.frame_0)
@@ -136,7 +138,7 @@ class MainWindow(ttk.Window):
 
     def criar_aba_gas(self):
         frame_pai_gas = ttk.Frame(self.frame_0)
-        self.notebook.add(frame_pai_gas, text='Aluguel de Carro')
+        self.notebook.add(frame_pai_gas, text='Combustível')
         self.aba_gas = AbaGas(frame_pai_gas, self.controller)
         self.aba_gas.criar_frame_aba()
         self.aba_gas.criar_headers()
@@ -150,3 +152,8 @@ class MainWindow(ttk.Window):
 
     def atualizar_abas(self):
         self.aba_despesas.atualizar_desps()
+
+    def trocar_aba(self, event):
+        aba_selecionada = self.notebook.index(self.notebook.select())
+        abas = {0: 'despesas', 1: 'gas', 2: 'aerea', 3: 'hotel'}
+        self.tipo_config = abas[int(aba_selecionada)]
