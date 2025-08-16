@@ -1,13 +1,13 @@
 from .database import Database
 from .main_window import MainWindow
-from .configs_window import ConfigsWindow
+from .cfg_window import CfgWindow
 from .report_window import ReportWindow
 from .viagens_window import WindowViagem
 
 
 class Sasori():
     def __init__(self):
-        self.configs_despesas = {
+        self.cfg_despesas = {
             "Salário Mínimo": 1518.00,
             "Lanche em Trajeto": {
                 "Capitais": 1.5, "Outras": 1.5, 'Irrelevante': 1.5
@@ -22,11 +22,11 @@ class Sasori():
             "Janta": {"Capitais": 6.7, "Outras": 4.5},
         }
 
-        self.configs_gas = {
+        self.cfg_gas = {
             "consumo": 10.0,
             "custo_gas": 6.19
         }
-        self.tipos_despesa = list(self.configs_despesas.keys())[1:]
+        self.tipos_despesa = list(self.cfg_despesas.keys())[1:]
         self.db = Database()
         self.mw = MainWindow(self)
 
@@ -43,8 +43,8 @@ class Sasori():
         self.mw.criar_botoes_controle()
         self.mw.criar_botoes_sql()
 
-    def abrir_configs(self, tipo_config):
-        ConfigsWindow(self.mw, self, tipo_config)
+    def abrir_cfg(self, tipo_cfg):
+        CfgWindow(self.mw, self, tipo_cfg)
 
     def gerar_report(self):
         linhas_despesas = self.mw.aba_despesas.dados_despesas()

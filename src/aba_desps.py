@@ -7,7 +7,7 @@ class AbaDespesas:
     def __init__(self, frame_pai, controller):
         self.frame_pai = frame_pai
         self.controller = controller
-        self.configs = self.controller.configs_despesas
+        self.cfg = self.controller.cfg_despesas
         self.tipos_despesa = self.controller.tipos_despesa
 
         self.linhas_despesas = []
@@ -265,11 +265,11 @@ class AbaDespesas:
 
     def atualizar_loc(self, linha, row_num):
         tipo_str = linha["tipo_var"].get()
-        if not tipo_str or tipo_str not in self.configs:
+        if not tipo_str or tipo_str not in self.cfg:
             self.mostrar_localidade_irrelevante(linha, row_num)
             return
-        pct_capitais = self.configs[tipo_str]['Capitais']
-        pct_outras = self.configs[tipo_str]['Outras']
+        pct_capitais = self.cfg[tipo_str]['Capitais']
+        pct_outras = self.cfg[tipo_str]['Outras']
 
         if pct_capitais != pct_outras:
             self.mostrar_localidade_relevante(linha, row_num)
@@ -279,9 +279,9 @@ class AbaDespesas:
     def atualizar_valor(self, linha):
         tipo = linha["tipo_var"].get()
         loc = linha["loc_var"].get()
-        pct = self.configs.get(tipo, {}).get(loc, 0.0)
+        pct = self.cfg.get(tipo, {}).get(loc, 0.0)
         linha["valor_var"].set(
-            f'R$ {(self.configs["Salário Mínimo"]/100)*pct:.2f}'.replace(
+            f'R$ {(self.cfg["Salário Mínimo"]/100)*pct:.2f}'.replace(
                 ".", ","
             ))
 
@@ -320,8 +320,8 @@ class AbaDespesas:
             valor_float = float(
                 valor_str.replace('R$ ', '').replace('.', '').replace(',', '.')
             )
-            pct_capitais = self.configs[tipo_str]['Capitais']
-            pct_outras = self.configs[tipo_str]['Outras']
+            pct_capitais = self.cfg[tipo_str]['Capitais']
+            pct_outras = self.cfg[tipo_str]['Outras']
 
             if pct_capitais == pct_outras:
                 loc_str = 'Irrelevante'

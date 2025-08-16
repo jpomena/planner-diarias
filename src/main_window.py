@@ -67,29 +67,35 @@ class MainWindow(ttk.Window):
         )
 
     def criar_botoes_controle(self):
-        self.tipo_config = 'despesas'
+        self.tipo_cfg = 'despesas'
         frame_botoes = ttk.Frame(self.frame_controle)
         frame_botoes.pack(expand=True, anchor='center')
 
         self.botao_add_linha = ttk.Button(
             frame_botoes,
             text="Adicionar Linha",
-            command=self.aba_despesas.criar_linha
+            command=self.criar_linha(self.tipo_cfg)
         )
         self.botao_report = ttk.Button(
             frame_botoes,
             text="Gerar Relatório",
             command=self.controller.gerar_report
         )
-        self.botao_configs = ttk.Button(
+        self.botao_cfg = ttk.Button(
             frame_botoes,
             text="Configurações",
-            command=lambda: self.controller.abrir_configs(self.tipo_config)
+            command=lambda: self.controller.abrir_cfg(self.tipo_cfg)
         )
 
         self.botao_add_linha.pack(side=Tk.LEFT, padx=5, pady=4)
         self.botao_report.pack(side=Tk.LEFT, padx=5, pady=4)
-        self.botao_configs.pack(side=Tk.LEFT, padx=5, pady=4)
+        self.botao_cfg.pack(side=Tk.LEFT, padx=5, pady=4)
+
+    def criar_linha(self, tipo_cfg):
+        if tipo_cfg == 'despesa':
+            self.aba_despesas.criar_linha()
+        elif tipo_cfg == 'gas':
+            self.aba_gas.criar_linha()
 
     def criar_botoes_sql(self):
         frame_sql = ttk.Frame(
@@ -156,4 +162,4 @@ class MainWindow(ttk.Window):
     def trocar_aba(self, event):
         aba_selecionada = self.notebook.index(self.notebook.select())
         abas = {0: 'despesas', 1: 'gas', 2: 'aerea', 3: 'hotel'}
-        self.tipo_config = abas[int(aba_selecionada)]
+        self.tipo_cfg = abas[int(aba_selecionada)]

@@ -7,7 +7,7 @@ class AbaGas:
     def __init__(self, frame_pai, controller):
         self.frame_pai = frame_pai
         self.controller = controller
-        self.configs = self.controller.configs_gas
+        self.cfg = self.controller.cfg_gas
 
         self.linhas_gas = []
 
@@ -175,8 +175,8 @@ class AbaGas:
         linha['dist'] = dist_float
 
     def criar_campo_valor(self, linha, row_num):
-        consumo = self.configs.get('consumo', 0.0)
-        custo_gas = self.configs.get('custo_gas', 0.0)
+        consumo = self.cfg.get('consumo', 0.0)
+        custo_gas = self.cfg.get('custo_gas', 0.0)
         dist = linha.get('dist', 0.0)
         valor = (custo_gas * dist) / (consumo)
         valor_entry = ttk.Label(

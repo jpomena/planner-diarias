@@ -2,50 +2,50 @@ import tkinter as Tk
 import ttkbootstrap as ttk
 
 
-class ConfigsWindow(Tk.Toplevel):
-    def __init__(self, master, controller, tipo_config):
+class CfgWindow(Tk.Toplevel):
+    def __init__(self, master, controller, tipo_cfg):
         super().__init__(master)
         self.mw = master
         self.controller = controller
-        self.configs_despesas = self.controller.configs_despesas
-        self.configs_gas = self.controller.configs_gas
-        self.tipos_despesa = list(self.configs_despesas.keys())
+        self.cfg_despesas = self.controller.cfg_despesas
+        self.cfg_gas = self.controller.cfg_gas
+        self.tipos_despesa = list(self.cfg_despesas.keys())
         self.validando_decimal = False
         self.validando_moeda = False
 
         self.title("Configurações")
-        if tipo_config == 'despesas':
+        if tipo_cfg == 'despesas':
             self.geometry("400x400")
-        elif tipo_config == 'gas':
+        elif tipo_cfg == 'gas':
             self.geometry('400x150')
         self.transient(master)
         self.grab_set()
 
-        self.povoar_configs(tipo_config)
+        self.povoar_cfg(tipo_cfg)
 
         self.protocol('WM_DELETE_WINDOW', self.fechar)
 
-    def povoar_configs(self, tipo_config):
-        if tipo_config == 'despesas':
-            self.criar_frame_configs_despesas()
+    def povoar_cfg(self, tipo_cfg):
+        if tipo_cfg == 'despesas':
+            self.criar_frame_cfg_despesas()
             self.despesas_criar_labels()
             self.despesas_criar_entry_salario()
             self.despesas_criar_entry_porcentagens('Capitais', 2)
             self.despesas_criar_entry_porcentagens('Outras', 4)
 
-        if tipo_config == 'gas':
-            self.criar_frame_configs_gas()
-            self.criar_entry_configs_gas_custo()
-            self.criar_entry_configs_gas_consumo()
+        if tipo_cfg == 'gas':
+            self.criar_frame_cfg_gas()
+            self.criar_entry_cfg_gas_custo()
+            self.criar_entry_cfg_gas_consumo()
 
-    def criar_frame_configs_despesas(self):
-        self.frame_configs_despesas = ttk.Frame(
+    def criar_frame_cfg_despesas(self):
+        self.frame_cfg_despesas = ttk.Frame(
             self,
             padding=10
         )
-        self.frame_configs_despesas.pack(padx=5, pady=2)
+        self.frame_cfg_despesas.pack(padx=5, pady=2)
         self.frame_pct_despesas = ttk.LabelFrame(
-            self.frame_configs_despesas,
+            self.frame_cfg_despesas,
             text='Percentuais de Reembolso',
             padding=10
         )
@@ -59,21 +59,21 @@ class ConfigsWindow(Tk.Toplevel):
         )
 
     def despesas_criar_labels(self):
-        for index, config in enumerate(self.tipos_despesa[1:], 1):
+        for index, cfg in enumerate(self.tipos_despesa[1:], 1):
             self.frame_pct_despesas.grid_rowconfigure(
                 index, weight=0
             )
             ttk.Label(
                 self.frame_pct_despesas,
-                text=config,
+                text=cfg,
                 justify="right"
             ).grid(row=index+1, column=0, padx=5, pady=2)
 
         for col in range(6):
-            self.frame_configs_despesas.grid_columnconfigure(
+            self.frame_cfg_despesas.grid_columnconfigure(
                 col, weight=0
             )
-            self.frame_configs_despesas.grid_columnconfigure(
+            self.frame_cfg_despesas.grid_columnconfigure(
                 1, minsize=0
             )
 
@@ -110,7 +110,7 @@ class ConfigsWindow(Tk.Toplevel):
 
     def despesas_criar_entry_salario(self):
         sm_frame = ttk.LabelFrame(
-            self.frame_configs_despesas,
+            self.frame_cfg_despesas,
             text='Salário Mínimo'
         )
         sm_frame.grid(
@@ -123,11 +123,11 @@ class ConfigsWindow(Tk.Toplevel):
         )
         sm_var = Tk.StringVar(
             value=self.formatar_moeda(
-                self.configs_despesas['Salário Mínimo']
+                self.cfg_despesas['Salário Mínimo']
             ))
         sm_var.trace_add(
             'write', self._callback_validar_moeda(
-                sm_var, self.configs_despesas, 'Salário Mínimo'
+                sm_var, self.cfg_despesas, 'Salário Mínimo'
                 ))
 
         entry_sm = ttk.Entry(
@@ -166,34 +166,34 @@ class ConfigsWindow(Tk.Toplevel):
         if numero_float > 100.0:
             numero_float = 100.0
 
-        if dict_cfg == self.configs_despesas:
+        if dict_cfg == self.cfg_despesas:
             dict_cfg[dict_key][loc_despesa] = numero_float
             num.set(self.formatar_decimal(numero_float))
 
             pct_cap = dict_cfg[dict_key].get('Capitais', 0.0)
             pct_outras = dict_cfg[dict_key].get('Outras', 0.0)
             if pct_cap == pct_outras:
-                self.configs_despesas[dict_key]['Irrelevante'] = pct_cap
+                self.cfg_despesas[dict_key]['Irrelevante'] = pct_cap
             else:
-                self.configs_despesas[dict_key]['Irrelevante'] = 0.0
-        elif dict_cfg == self.configs_gas:
+                self.cfg_despesas[dict_key]['Irrelevante'] = 0.0
+        elif dict_cfg == self.cfg_gas:
             dict_cfg[dict_key] = numero_float
             num.set(self.formatar_decimal(numero_float))
 
         self.validando_decimal = False
 
     def despesas_criar_entry_porcentagens(self, loc, coluna):
-        for index, tipo in enumerate(list(self.configs_despesas.keys())[1:]):
+        for index, tipo in enumerate(list(self.cfg_despesas.keys())[1:]):
             pct_var = Tk.StringVar(
                 value=self.formatar_decimal(
-                    self.configs_despesas[tipo][loc]
+                    self.cfg_despesas[tipo][loc]
                 ))
 
             pct_var.trace_add(
                 'write',
                 lambda *args,
                 v=pct_var,
-                d=self.configs_despesas,
+                d=self.cfg_despesas,
                 t=tipo,
                 c=loc: self.validar_decimal(
                     v, d, t, c, *args
@@ -248,30 +248,30 @@ class ConfigsWindow(Tk.Toplevel):
         self.mw.atualizar_abas()
         self.destroy()
 
-    def criar_frame_configs_gas(self):
-        self.frame_configs_gas = ttk.Frame(
+    def criar_frame_cfg_gas(self):
+        self.frame_cfg_gas = ttk.Frame(
             self,
             padding=10
         )
-        self.frame_configs_gas.pack(fill=Tk.X, expand=True, anchor='center')
+        self.frame_cfg_gas.pack(fill=Tk.X, expand=True, anchor='center')
 
-    def criar_entry_configs_gas_custo(self):
+    def criar_entry_cfg_gas_custo(self):
         valor_str = Tk.StringVar(
-            value=self.formatar_moeda(self.configs_gas['custo_gas'])
+            value=self.formatar_moeda(self.cfg_gas['custo_gas'])
         )
         valor_str.trace_add(
             'write', self._callback_validar_moeda(
-                valor_str, self.configs_gas, 'custo_gas'
+                valor_str, self.cfg_gas, 'custo_gas'
             ))
 
         frame_entry = ttk.LabelFrame(
-            self.frame_configs_gas,
+            self.frame_cfg_gas,
             text='Preço do combustível por litro',
         )
         frame_entry.pack(
             side=Tk.TOP, fill=Tk.BOTH, expand=True, padx=5, pady=2
         )
-        config_entry = ttk.Entry(
+        cfg_entry = ttk.Entry(
             frame_entry,
             textvariable=valor_str,
             validate='all',
@@ -282,32 +282,32 @@ class ConfigsWindow(Tk.Toplevel):
                 '%i',
                 '%S'
             ), justify='right')
-        config_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        config_entry.bind("<Button-1>", self.empurrar_caret)
-        config_entry.bind("<Key>", self.empurrar_caret)
+        cfg_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        cfg_entry.bind("<Button-1>", self.empurrar_caret)
+        cfg_entry.bind("<Key>", self.empurrar_caret)
 
-    def criar_entry_configs_gas_consumo(self):
+    def criar_entry_cfg_gas_consumo(self):
         valor_str = Tk.StringVar(
-            value=self.formatar_decimal(self.configs_gas['consumo'])
+            value=self.formatar_decimal(self.cfg_gas['consumo'])
         )
         valor_str.trace_add(
             'write', (
                 lambda *args,
                 v=valor_str,
-                d=self.configs_gas,
+                d=self.cfg_gas,
                 k='custo_gas',
                 loc=None:
                     self.validar_decimal(v, d, k, loc, *args)
             ))
 
         frame_entry = ttk.LabelFrame(
-            self.frame_configs_gas,
+            self.frame_cfg_gas,
             text='Rendimento do veículo (km/L)',
         )
         frame_entry.pack(
             side=Tk.TOP, fill=Tk.BOTH, expand=True, padx=5, pady=2
         )
-        config_entry = ttk.Entry(
+        cfg_entry = ttk.Entry(
             frame_entry,
             textvariable=valor_str,
             validate='all',
@@ -318,9 +318,9 @@ class ConfigsWindow(Tk.Toplevel):
                 '%i',
                 '%S'
             ), justify='right')
-        config_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        config_entry.bind("<Button-1>", self.empurrar_caret)
-        config_entry.bind("<Key>", self.empurrar_caret)
+        cfg_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        cfg_entry.bind("<Button-1>", self.empurrar_caret)
+        cfg_entry.bind("<Key>", self.empurrar_caret)
 
     def _callback_validar_moeda(self, valor, dict_cfg, dict_key):
         return lambda *args: self.validar_moeda(
