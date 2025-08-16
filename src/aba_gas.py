@@ -40,7 +40,7 @@ class AbaGas:
         canvas.bind("<Configure>", centralizar_frame)
 
     def criar_headers(self):
-        headers = ["Data", "Destino", "Distânca", "Valor", ""]
+        headers = ["Data", "Destino", "Distância", "Valor", ""]
         col_dados = len(headers)
         for col in range(5):
             self.frame_gas.grid_columnconfigure(col * 2, weight=0)
@@ -68,7 +68,6 @@ class AbaGas:
             destino_inicial = None
             dist_inicial = None
 
-        linha = {}
         linha = {
             'data_var': data_inicial,
             'destino_var': destino_inicial,
@@ -81,6 +80,7 @@ class AbaGas:
         self.criar_campo_dist(linha, row_num)
         self.criar_campo_valor(linha, row_num)
         self.criar_removedor(linha, row_num)
+        self.atualizar_valor(linha)
 
         self.linhas_gas.append(linha)
 
@@ -112,14 +112,12 @@ class AbaGas:
         )
 
     def criar_campo_destino(self, linha, row_num):
-        if linha['destino_var']:
-            destino = Tk.StringVar(value=linha['destino_var'])
-        else:
+        if not linha['destino_var']:
             destino = Tk.StringVar()
 
         destino_entry = ttk.Entry(
             self.frame_gas,
-            textvariable=destino
+            textvariable=linha['destino_var']
         )
         destino_entry.grid(
             row=row_num,
@@ -132,10 +130,8 @@ class AbaGas:
         linha['destino_var'] = destino.get()
 
     def criar_campo_dist(self, linha, row_num):
-        if linha['dist_var']:
-            dist = Tk.StringVar(value=linha['dist_var'])
-        else:
-            dist = Tk.StringVar()
+        if not linha['dist_var']:
+            linha['dist_var'] = Tk.StringVar()
 
         frame_dist = ttk.Frame(
             self.frame_gas
@@ -147,7 +143,8 @@ class AbaGas:
         )
         dist_entry = ttk.Entry(
             frame_dist,
-            textvariable=dist
+            textvariable=linha['dist_var'],
+            justify='right'
         )
         linha['dist_entry'] = dist_entry
         km_label = ttk.Label(
@@ -166,22 +163,13 @@ class AbaGas:
             side=Tk.LEFT
         )
 
-        try:
-            dist_str = dist.get()
-            dist_float = float(dist_str.replace(',', '.').replace(' km', ''))
-        except ValueError:
-            dist_float = 0.0
-
-        linha['dist'] = dist_float
-
     def criar_campo_valor(self, linha, row_num):
-        consumo = self.cfg.get('consumo', 0.0)
-        custo_gas = self.cfg.get('custo_gas', 0.0)
-        dist = linha.get('dist', 0.0)
-        valor = (custo_gas * dist) / (consumo)
+        valor = Tk.StringVar(value='R$ 0,00')
+        linha['valor_var'] = valor
         valor_entry = ttk.Label(
             self.frame_gas,
-            text=f'R$ {valor}'
+            textvariable=linha['valor_var'],
+            justify='right'
         )
         valor_entry.grid(
             row=row_num,
@@ -192,16 +180,31 @@ class AbaGas:
         linha['valor_entry'] = valor_entry
 
     def criar_removedor(self, linha, row_num):
-        linha["removedor"] = ttk.Button(
+        linha['removedor'] = ttk.Button(
             self.frame_gas,
-            text="X",
+            text='X',
             width=3,
             command=lambda: self.remover_linha(linha)
         )
-        linha["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
+        linha['removedor'].grid(row=row_num, column=8, padx=25, pady=2)
 
     def remover_linha(self, linha):
         for item in list(linha.values()):
             if isinstance(item, Tk.Widget):
                 item.destroy()
         self.linhas_gas.remove(linha)
+
+    def atualizar_valor(self, linha):
+        try:
+            dist_str = linha.get('dist_var', 0.0).get()
+            dist_float = float(dist_str.replace(',', '.').replace(' km', ''))
+        except ValueError:
+            dist_float = 0.0
+        consumo = self.cfg.get('consumo', 0.0)
+        custo_gas = self.cfg.get('custo_gas', 0.0)
+        valor = (custo_gas * dist_float) / (consumo)
+        linha['valor_var'].set(f'RS {valor:.2f}'.replace('.', ','))
+
+    def atualizar_gas(self):
+        for linha in self.linhas_gas:
+            self.atualizar_valor(linha)

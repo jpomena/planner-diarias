@@ -74,7 +74,7 @@ class MainWindow(ttk.Window):
         self.botao_add_linha = ttk.Button(
             frame_botoes,
             text="Adicionar Linha",
-            command=self.criar_linha(self.tipo_cfg)
+            command=self.criar_linha
         )
         self.botao_report = ttk.Button(
             frame_botoes,
@@ -91,10 +91,10 @@ class MainWindow(ttk.Window):
         self.botao_report.pack(side=Tk.LEFT, padx=5, pady=4)
         self.botao_cfg.pack(side=Tk.LEFT, padx=5, pady=4)
 
-    def criar_linha(self, tipo_cfg):
-        if tipo_cfg == 'despesa':
+    def criar_linha(self):
+        if self.tipo_cfg == 'despesas':
             self.aba_despesas.criar_linha()
-        elif tipo_cfg == 'gas':
+        elif self.tipo_cfg == 'gas':
             self.aba_gas.criar_linha()
 
     def criar_botoes_sql(self):
@@ -158,6 +158,7 @@ class MainWindow(ttk.Window):
 
     def atualizar_abas(self):
         self.aba_despesas.atualizar_desps()
+        self.aba_gas.atualizar_gas()
 
     def trocar_aba(self, event):
         aba_selecionada = self.notebook.index(self.notebook.select())
