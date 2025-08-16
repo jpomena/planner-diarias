@@ -310,8 +310,8 @@ class AbaDespesas:
         if not obj:
             self.criar_linha()
 
-    def dados_despesas(self):
-        despesas_viagem = []
+    def get_dados_despesas(self):
+        dados_despesas = []
         for linha in self.linhas_despesas:
             data_str = linha['data_var'].get()
             tipo_str = linha['tipo_var'].get()
@@ -326,10 +326,10 @@ class AbaDespesas:
             if pct_capitais == pct_outras:
                 loc_str = 'Irrelevante'
             despesa = {
-                'data': data_str,
-                'tipo': tipo_str,
-                'loc': loc_str,
-                'valor': valor_float
+                'data_desp': data_str,
+                'tipo_desp': tipo_str,
+                'loc_desp': loc_str,
+                'valor_desp': valor_float
             }
-            despesas_viagem.append(despesa)
-        return despesas_viagem
+            dados_despesas.append(despesa)
+        return dados_despesas

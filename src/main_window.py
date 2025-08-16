@@ -150,11 +150,14 @@ class MainWindow(ttk.Window):
         self.aba_gas.criar_headers()
         self.aba_gas.criar_linha()
 
-    def carregar_despesas(self, despesas_viagem):
+    def carregar_viagem(self, despesas_viagem, gas_viagem, nome_viagem):
         self.aba_despesas.carregar_despesas(despesas_viagem)
+        self.aba_gas.carregar_gas(gas_viagem)
+        self.nome_viagem.set(nome_viagem)
 
-    def fechar_despesas(self, obj=None):
+    def fechar_viagem(self, obj=None):
         self.aba_despesas.fechar_despesas(obj)
+        self.aba_gas.fechar_gas(obj)
 
     def atualizar_abas(self):
         self.aba_despesas.atualizar_desps()

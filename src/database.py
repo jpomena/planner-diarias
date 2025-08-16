@@ -36,8 +36,19 @@ class Database:
             FOREIGN KEY (id_viagem)
             REFERENCES viagens (id_viagem) ON DELETE CASCADE
         );'''
+        gerar_tab_gas = ''' CREATE TABLE IF NOT EXISTS gas(
+            id_gas INTEGER PRIMARY KEY AUTOINCREMENT,
+            data_gas TEXT,
+            destino_gas TEXT,
+            dist_gas TEXTO NOT NULL,
+            valor_gas REAL NOT NULL,
+            id_viagem INTEGER,
+            FOREIGN KEY (id_viagem)
+            REFERENCES viagens (id_viagem) ON DELETE CASCADE
+        );'''
         self.cursor.execute(gerar_tab_viagens)
         self.cursor.execute(gerar_tab_despesas)
+        self.cursor.execute(gerar_tab_gas)
         self.conn.commit()
 
     def add_viagem(self, nome_viagem_str):
@@ -54,24 +65,39 @@ class Database:
             id_viagem = self.cursor.lastrowid
             return id_viagem
 
-    def add_despesas(self, despesas_viagem, nome_viagem_str):
+    def add_dados_viagem(self, dados_despesas, dados_gas, nome_viagem_str):
         id_viagem = self.get_id(nome_viagem_str)
-        self.del_despesas(id_viagem)
+        self.del_dados_viagem(id_viagem)
 
         sql_add_despesas = '''INSERT INTO despesas (
         data_despesa, tipo_despesa, loc_despesa, valor_despesa, id_viagem
         ) VALUES (?, ?, ?, ?, ?)
         '''
-        for despesa in despesas_viagem:
-            data = despesa['data']
-            tipo = despesa['tipo']
-            loc = despesa['loc']
-            valor = despesa['valor']
+        sql_add_gas = '''INSERT INTO gas(
+        data_gas, destino_gas, dist_gas, valor_gas, id_viagem
+        ) VALUES (?, ?, ?, ?, ?)
+        '''
 
+        for entrada in dados_despesas:
+            data_desp = entrada['data_desp']
+            tipo_desp = entrada['tipo_desp']
+            loc_desp = entrada['loc_desp']
+            valor_desp = entrada['valor_desp']
             self.cursor.execute(
                 sql_add_despesas, (
-                    data, tipo, loc, valor, id_viagem
+                    data_desp, tipo_desp, loc_desp, valor_desp, id_viagem
                 ))
+
+        for entrada in dados_gas:
+            data_gas = entrada['data_gas']
+            destino_gas = entrada['destino_gas']
+            dist_gas = entrada['dist_gas']
+            valor_gas = entrada['valor_gas']
+            self.cursor.execute(
+                sql_add_gas, (
+                    data_gas, destino_gas, dist_gas, valor_gas, id_viagem
+                ))
+
         self.conn.commit()
 
     def get_id(self, nome_viagem):
@@ -96,14 +122,19 @@ class Database:
         nomes = [nome[0] for nome in resultado_query]
         return nomes
 
-    def del_despesas(self, id_viagem):
+    def del_dados_viagem(self, id_viagem):
         sql_delete_despesas = '''
             DELETE FROM despesas WHERE id_viagem = ?;
         '''
+        sql_delete_gas = '''
+            DELETE FROM gas WHERE id_viagem = ?;
+        '''
+
         self.cursor.execute(sql_delete_despesas, (id_viagem,))
+        self.cursor.execute(sql_delete_gas, (id_viagem,))
         self.conn.commit()
 
-    def get_despesas_por_nome(self, nome_viagem):
+    def get_despesas_db(self, nome_viagem):
         id_viagem = self.get_id(nome_viagem)
         sql_despesas_viagem = '''
             SELECT data_despesa, tipo_despesa, loc_despesa, valor_despesa
@@ -124,6 +155,27 @@ class Database:
             despesas_viagem.append(dados_despesa)
 
         return despesas_viagem
+
+    def get_gas_db(self, nome_viagem):
+        id_viagem = self.get_id(nome_viagem)
+        sql_gas_viagem = '''
+            SELECT data_gas, destino_gas, dist_gas, valor_gas
+            FROM gas
+            WHERE id_viagem = ?;
+        '''
+        self.cursor.execute(sql_gas_viagem, (id_viagem,))
+        resultados = self.cursor.fetchall()
+
+        gas_viagem = []
+        for resultado in resultados:
+            dados_gas = {
+                'data': resultado[0],
+                'destino': resultado[1],
+                'dist': resultado[2],
+                'valor': resultado[3]
+            }
+            gas_viagem.append(dados_gas)
+        return gas_viagem
 
     def del_viagem(self, nome_viagem):
         id_viagem = self.get_id(nome_viagem)

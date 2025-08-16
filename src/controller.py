@@ -54,12 +54,21 @@ class Sasori():
         obj = 'open'
         WindowViagem(self.mw, self, obj, self.carregar_viagem)
 
+    def get_dados_viagem(self):
+        dados_viagem = []
+        dados_despesas = self.mw.get_dados_despesas()
+        dados_gas = self.mw.get_dados_gas()
+
+        dados_viagem.append(dados_despesas)
+        dados_viagem.append(dados_gas)
+
     def carregar_viagem(self, nome_viagem):
         obj = 'load'
         self.fechar_viagem(obj)
 
-        despesas_viagem = self.db.get_despesas_por_nome(nome_viagem)
-        self.mw.carregar_despesas(despesas_viagem)
+        despesas_viagem = self.db.get_despesas_db(nome_viagem)
+        gas_viagem = self.db.get_gas_db(nome_viagem)
+        self.mw.carregar_viagem(despesas_viagem, gas_viagem, nome_viagem)
 
         info = (
             'Sucesso', f'A viagem {nome_viagem} foi aberta com sucesso!'
@@ -67,7 +76,7 @@ class Sasori():
         self.mw.aviso(info)
 
     def fechar_viagem(self, obj=None):
-        self.mw.fechar_despesas(obj)
+        self.mw.fechar_viagem(obj)
         self.mw.nome_viagem.set('')
 
     def salvar_viagem(self, nome_viagem):
@@ -76,8 +85,9 @@ class Sasori():
         self.salvar_despesas(nome_viagem_str)
 
     def salvar_despesas(self, nome_viagem_str):
-        despesas_viagem = self.mw.aba_despesas.dados_despesas()
-        self.db.add_despesas(despesas_viagem, nome_viagem_str)
+        dados_despesas = self.mw.aba_despesas.get_dados_despesas()
+        dados_gas = self.mw.aba_gas.get_dados_gas()
+        self.db.add_dados_viagem(dados_despesas, dados_gas, nome_viagem_str)
 
         info = (
             'Sucesso', f'A viagem {nome_viagem_str} foi salva com sucesso!'

@@ -8,6 +8,7 @@ class AbaGas:
         self.frame_pai = frame_pai
         self.controller = controller
         self.cfg = self.controller.cfg_gas
+        self.validando_dist = False
 
         self.linhas_gas = []
 
@@ -40,7 +41,7 @@ class AbaGas:
         canvas.bind("<Configure>", centralizar_frame)
 
     def criar_headers(self):
-        headers = ["Data", "Destino", "Distância", "Valor", ""]
+        headers = ["Data", "Trajeto", "Distância", "Valor", ""]
         col_dados = len(headers)
         for col in range(5):
             self.frame_gas.grid_columnconfigure(col * 2, weight=0)
@@ -69,9 +70,9 @@ class AbaGas:
             dist_inicial = None
 
         linha = {
-            'data_var': data_inicial,
-            'destino_var': destino_inicial,
-            'dist_var': dist_inicial
+            'data_gas': data_inicial,
+            'destino_gas': destino_inicial,
+            'dist_gas': dist_inicial
         }
         row_num = len(self.linhas_gas) + 1
 
@@ -85,9 +86,9 @@ class AbaGas:
         self.linhas_gas.append(linha)
 
     def criar_campo_data(self, linha, row_num):
-        if linha['data_var']:
+        if linha['data_gas']:
             data_inicial_datetime = datetime.strptime(
-                linha['data_var'], '%d/%m/%Y'
+                linha['data_gas'], '%d/%m/%Y'
             )
             data_entry = ttk.DateEntry(
                 self.frame_gas,
@@ -102,7 +103,7 @@ class AbaGas:
                 startdate=datetime.now()
             )
         linha["data_entry"] = data_entry
-        linha["data_var"] = data_entry.entry
+        linha["data_gas"] = data_entry.entry
         data_entry.grid(
             row=row_num,
             column=0,
@@ -112,12 +113,14 @@ class AbaGas:
         )
 
     def criar_campo_destino(self, linha, row_num):
-        if not linha['destino_var']:
-            destino = Tk.StringVar()
+        if not linha['destino_gas']:
+            linha['destino_gas'] = Tk.StringVar()
+        else:
+            linha['destino_gas'] = Tk.StringVar(value=linha['destino_gas'])
 
         destino_entry = ttk.Entry(
             self.frame_gas,
-            textvariable=linha['destino_var']
+            textvariable=linha['destino_gas']
         )
         destino_entry.grid(
             row=row_num,
@@ -127,12 +130,12 @@ class AbaGas:
             sticky='ew'
         )
         linha['destino_entry'] = destino_entry
-        linha['destino_var'] = destino.get()
 
     def criar_campo_dist(self, linha, row_num):
-        if not linha['dist_var']:
-            linha['dist_var'] = Tk.StringVar()
-
+        if not linha['dist_gas']:
+            linha['dist_gas'] = Tk.StringVar()
+        else:
+            linha['dist_gas'] = Tk.StringVar(value=linha['dist_gas'])
         frame_dist = ttk.Frame(
             self.frame_gas
         )
@@ -143,7 +146,7 @@ class AbaGas:
         )
         dist_entry = ttk.Entry(
             frame_dist,
-            textvariable=linha['dist_var'],
+            textvariable=linha['dist_gas'],
             justify='right'
         )
         linha['dist_entry'] = dist_entry
@@ -162,13 +165,19 @@ class AbaGas:
         km_label.pack(
             side=Tk.LEFT
         )
+        linha['dist_gas'].trace_add(
+            'write',
+            lambda *args, lin=linha: self.validar_dist(lin, *args)
+        )
+        linha['dist_entry'].bind('<Key>', self.empurrar_caret)
+        linha['dist_entry'].bind('<Button-1>', self.empurrar_caret)
 
     def criar_campo_valor(self, linha, row_num):
         valor = Tk.StringVar(value='R$ 0,00')
-        linha['valor_var'] = valor
+        linha['valor_gas'] = valor
         valor_entry = ttk.Label(
             self.frame_gas,
-            textvariable=linha['valor_var'],
+            textvariable=linha['valor_gas'],
             justify='right'
         )
         valor_entry.grid(
@@ -196,15 +205,75 @@ class AbaGas:
 
     def atualizar_valor(self, linha):
         try:
-            dist_str = linha.get('dist_var', 0.0).get()
-            dist_float = float(dist_str.replace(',', '.').replace(' km', ''))
+            dist_str = linha.get('dist_gas').get()
+            dist_float = float(dist_str.replace(',', '.'))
         except ValueError:
             dist_float = 0.0
         consumo = self.cfg.get('consumo', 0.0)
         custo_gas = self.cfg.get('custo_gas', 0.0)
         valor = (custo_gas * dist_float) / (consumo)
-        linha['valor_var'].set(f'RS {valor:.2f}'.replace('.', ','))
+        linha['valor_gas'].set(f'R$ {valor:.2f}'.replace('.', ','))
 
     def atualizar_gas(self):
         for linha in self.linhas_gas:
             self.atualizar_valor(linha)
+
+    def carregar_gas(self, gas_viagem):
+        for linha in gas_viagem:
+            self.criar_linha(linha)
+
+    def formatar_dist(self, num_float,):
+        return f'{num_float:.1f}'.replace('.', ',')
+
+    def validar_dist(self, linha, *args):
+        if self.validando_dist:
+            return
+        self.validando_dist = True
+
+        valor_str = linha['dist_gas'].get()
+        valor_cru = "".join(filter(str.isdigit, valor_str))
+        if not valor_cru:
+            valor_float = 0.0
+        else:
+            valor_float = int(valor_cru) / 10
+
+        linha['dist_gas'].set(self.formatar_dist(valor_float))
+        self.atualizar_valor(linha)
+
+        self.validando_dist = False
+
+    def empurrar_caret(self, event):
+        event.widget.after_idle(event.widget.icursor, 'end')
+
+    def get_dados_gas(self):
+        dados_gas = []
+        for linha in self.linhas_gas:
+            data_str = linha['data_gas'].get()
+            try:
+                tipo_str = linha['destino_gas'].get()
+            except AttributeError:
+                tipo_str = linha['destino_gas']
+            loc_str = linha['dist_gas'].get()
+            valor_cru = linha['valor_gas'].get()
+            valor_str = (
+                valor_cru
+                .replace('R$ ', '')
+                .replace('.', '')
+                .replace(',', '.')
+            )
+            valor_float = float(valor_str)
+
+            gas = {
+                'data_gas': data_str,
+                'destino_gas': tipo_str,
+                'dist_gas': loc_str,
+                'valor_gas': valor_float
+            }
+            dados_gas.append(gas)
+        return dados_gas
+
+    def fechar_gas(self, obj=None):
+        for linha in list(self.linhas_gas):
+            self.remover_linha(linha)
+        if not obj:
+            self.criar_linha()
