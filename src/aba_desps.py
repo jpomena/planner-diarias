@@ -4,18 +4,18 @@ from datetime import datetime
 
 
 class AbaDespesas:
-    def __init__(self, frame_pai, controller):
-        self.frame_pai = frame_pai
+    def __init__(self, parent_frame, controller):
+        self.parent_frame = parent_frame
         self.controller = controller
-        self.cfg = self.controller.cfg_despesas
-        self.tipos_despesa = self.controller.tipos_despesa
+        self.config = self.controller.expenses_config
+        self.expense_types = self.controller.expense_types
 
-        self.linhas_despesas = []
+        self.expenses_rows = []
 
-    def criar_frame_aba(self):
-        canvas = ttk.Canvas(self.frame_pai)
+    def create_tab_frame(self):
+        canvas = ttk.Canvas(self.parent_frame)
         scrollbar = ttk.Scrollbar(
-            self.frame_pai, orient="vertical", command=canvas.yview
+            self.parent_frame, orient="vertical", command=canvas.yview
         )
 
         scrollbar.pack(side="right", fill="y")
@@ -23,97 +23,99 @@ class AbaDespesas:
 
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        self.frame_despesas = ttk.Frame(canvas)
+        self.expenses_frame = ttk.Frame(canvas)
         frame_id = canvas.create_window(
-            (0, 0), window=self.frame_despesas, anchor="nw"
+            (0, 0), window=self.expenses_frame, anchor="nw"
         )
 
-        def centralizar_frame(event):
+        def center_frame(event):
             canvas_width = event.width
-            frame_width = self.frame_despesas.winfo_reqwidth()
+            frame_width = self.expenses_frame.winfo_reqwidth()
             x_pos = (canvas_width - frame_width) // 2
             canvas.coords(frame_id, x_pos if x_pos > 0 else 0, 0)
 
-        def redimensionar_frame(event):
+        def resize_frame(event):
             canvas.configure(scrollregion=canvas.bbox("all"))
 
-        self.frame_despesas.bind("<Configure>", redimensionar_frame)
-        canvas.bind("<Configure>", centralizar_frame)
+        self.expenses_frame.bind("<Configure>", resize_frame)
+        canvas.bind("<Configure>", center_frame)
 
-        def rolar_mouse(event):
+        def scroll_mouse(event):
             if event.num == 5 or event.delta == -120:
                 canvas.yview_scroll(1, "units")
             if event.num == 4 or event.delta == 120:
                 canvas.yview_scroll(-1, "units")
 
-        for widget in [canvas, self.frame_despesas]:
-            widget.bind("<MouseWheel>", rolar_mouse)
-            widget.bind("<Button-4>", rolar_mouse)
-            widget.bind("<Button-5>", rolar_mouse)
+        for widget in [canvas, self.expenses_frame]:
+            widget.bind("<MouseWheel>", scroll_mouse)
+            widget.bind("<Button-4>", scroll_mouse)
+            widget.bind("<Button-5>", scroll_mouse)
 
-    def criar_headers(self):
+    def create_headers(self):
         headers = ["Data", "Tipo", "Localidade", "Valor", ""]
-        col_dados = len(headers)
+        col_num = len(headers)
         for col in range(5):
-            self.frame_despesas.grid_columnconfigure(col * 2, weight=0)
+            self.expenses_frame.grid_columnconfigure(col * 2, weight=0)
 
         for col, header in enumerate(headers):
             ttk.Label(
-                self.frame_despesas,
+                self.expenses_frame,
                 text=header,
                 anchor="center",
                 font=("Helvetica", 10, "bold"),
             ).grid(row=0, column=col * 2, padx=5, pady=2, sticky="ew")
-            if col < col_dados - 1:
+            if col < col_num - 1:
                 ttk.Separator(
-                    self.frame_despesas,
+                    self.expenses_frame,
                     orient="vertical",
                 ).grid(row=0, column=col * 2 + 1, sticky="ns")
 
-    def criar_linha(self, despesa_viagem=None):
-        if despesa_viagem:
-            data_inicial = despesa_viagem['data']
-            tipo_inicial = despesa_viagem['tipo']
-            loc_inicial = despesa_viagem['loc']
+    def create_row(self, db_expenses_data=None):
+        if db_expenses_data:
+            date_str = db_expenses_data['data']
+            type_str = db_expenses_data['tipo']
+            location_str = db_expenses_data['loc']
         else:
-            data_inicial = None
-            tipo_inicial = None
-            loc_inicial = None
+            date_str = None
+            type_str = None
+            location_str = None
 
-        linha = {}
-        row_num = len(self.linhas_despesas) + 1
-        self.criar_campo_data(
-            linha, row_num, data_inicial
+        expense_row = {}
+        row_num = len(self.expenses_rows) + 1
+        self.create_date_field(
+            expense_row, row_num, date_str
         )
-        self.criar_campo_tipo(
-            linha, row_num, tipo_inicial
+        self.create_type_field(
+            expense_row, row_num, type_str
         )
-        self.criar_campo_loc(linha, row_num, loc_inicial)
-        self.criar_campo_valor(linha, row_num)
-        self.atualizar_loc(linha, row_num)
-        self.atualizar_valor(linha)
-        self.criar_removedor(linha, row_num)
+        self.create_location_field(expense_row, row_num, location_str)
+        self.create_value_field(expense_row, row_num)
+        self.update_location(expense_row, row_num)
+        self.update_value(expense_row)
+        self.create_remover(expense_row, row_num)
 
-        self.linhas_despesas.append(linha)
+        self.expenses_rows.append(expense_row)
 
-    def criar_campo_data(self, linha, row_num, data_inicial=None):
-        if data_inicial:
-            data_inicial_datetime = datetime.strptime(data_inicial, '%d/%m/%Y')
-            data_entry = ttk.DateEntry(
-                self.frame_despesas,
+    def create_date_field(self, expense_row, row_num, date_str=None):
+        if date_str:
+            date_datetime = datetime.strptime(
+                date_str, '%d/%m/%Y'
+            )
+            date_entry = ttk.DateEntry(
+                self.expenses_frame,
                 dateformat="%d/%m/%Y",
-                startdate=data_inicial_datetime
+                startdate=date_datetime
             )
 
         else:
-            data_entry = ttk.DateEntry(
-                self.frame_despesas,
+            date_entry = ttk.DateEntry(
+                self.expenses_frame,
                 dateformat="%d/%m/%Y",
                 startdate=datetime.now()
             )
-        linha["data_entry"] = data_entry
-        linha["data_var"] = data_entry.entry
-        data_entry.grid(
+        expense_row["data_entry"] = date_entry
+        expense_row["data_var"] = date_entry.entry
+        date_entry.grid(
             row=row_num,
             column=0,
             padx=5,
@@ -121,20 +123,20 @@ class AbaDespesas:
             sticky="ew"
         )
 
-    def criar_campo_tipo(self, linha, row_num, tipo_inicial=None):
-        if tipo_inicial:
-            tipo_var = Tk.StringVar(value=tipo_inicial)
+    def create_type_field(self, expense_row, row_num, type_str=None):
+        if type_str:
+            type_var = Tk.StringVar(value=type_str)
         else:
-            tipo_var = Tk.StringVar()
-        linha['tipo_var'] = tipo_var
+            type_var = Tk.StringVar()
+        expense_row['tipo_var'] = type_var
 
-        linha['tipo_combobox'] = ttk.Combobox(
-            self.frame_despesas,
-            textvariable=tipo_var,
-            values=self.controller.tipos_despesa,
+        expense_row['tipo_combobox'] = ttk.Combobox(
+            self.expenses_frame,
+            textvariable=type_var,
+            values=self.expense_types,
             state="readonly",
         )
-        linha["tipo_combobox"].grid(
+        expense_row["tipo_combobox"].grid(
             row=row_num,
             column=2,
             padx=5,
@@ -142,89 +144,91 @@ class AbaDespesas:
             sticky="ew",
         )
 
-        linha["tipo_combobox"].bind(
+        expense_row["tipo_combobox"].bind(
             "<<ComboboxSelected>>",
-            lambda event, linha=linha, row_num=row_num: (
-                self.atualizar_loc(linha, row_num),
-                self.atualizar_valor(linha),
+            lambda event, r=expense_row, r_n=row_num: (
+                self.update_location(r, r_n),
+                self.update_value(r),
             ))
 
-    def criar_campo_loc(self, linha, row_num, tipo_inicial=None):
-        if tipo_inicial:
-            loc_var = Tk.StringVar(value=tipo_inicial)
+    def create_location_field(self, expense_row, row_num, location_str=None):
+        if location_str:
+            location_var = Tk.StringVar(value=location_str)
         else:
-            loc_var = Tk.StringVar(value='Irrelevante')
-        loc_frame = ttk.Frame(self.frame_despesas)
-        linha["loc_frame"] = loc_frame
-        linha["loc_irrelevante"] = ttk.Label(
-            self.frame_despesas,
+            location_var = Tk.StringVar(value='Irrelevante')
+        location_frame = ttk.Frame(self.expenses_frame)
+        expense_row["loc_frame"] = location_frame
+        expense_row["loc_irrelevante"] = ttk.Label(
+            self.expenses_frame,
             text="Irrelevante",
             anchor="center",
             width="20"
         )
         ttk.Radiobutton(
-            loc_frame, text="Capitais", value="Capitais", variable=loc_var
+            location_frame,
+            text="Capitais",
+            value="Capitais",
+            variable=location_var
         ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
         ttk.Radiobutton(
-            loc_frame, text="Outras", value="Outras", variable=loc_var
+            location_frame,
+            text="Outras",
+            value="Outras",
+            variable=location_var
         ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
 
-        linha["loc_var"] = loc_var
-        loc_var.trace_add(
+        expense_row["loc_var"] = location_var
+        location_var.trace_add(
             "write",
             lambda *args,
-            linha=linha,
-            row_num=row_num: self.atualizar_valor(
-                linha
+            r=expense_row,
+            r_n=row_num: self.update_value(
+                r
             ))
 
-    def mostrar_localidade_relevante(self, linha, row_num):
-        loc_irrelevante = linha["loc_irrelevante"]
-        loc_frame = linha["loc_frame"]
+    def location_relevant(self, expense_row, row_num):
+        expense_row["loc_irrelevante"].grid_remove()
+        expense_row["loc_frame"].grid(row=row_num, column=4, padx=5, pady=2)
 
-        loc_irrelevante.grid_remove()
-        loc_frame.grid(row=row_num, column=4, padx=5, pady=2)
+    def location_irrelevant(self, expense_row, row_num):
+        expense_row["loc_frame"].grid_remove()
+        expense_row["loc_irrelevante"].grid(
+            row=row_num, column=4, padx=5, pady=2
+        )
 
-    def mostrar_localidade_irrelevante(self, linha, row_num):
-        loc_irrelevante = linha["loc_irrelevante"]
-        loc_frame = linha["loc_frame"]
+    def create_value_field(self, expense_row, row_num):
+        value_var = Tk.StringVar(value="R$ 0,00")
+        expense_row["valor_var"] = value_var
 
-        loc_frame.grid_remove()
-        loc_irrelevante.grid(row=row_num, column=4, padx=5, pady=2)
-
-    def criar_campo_valor(self, linha, row_num):
-        valor_var = Tk.StringVar(value="R$ 0,00")
-        linha["valor_var"] = valor_var
-
-        linha["valor_label"] = ttk.Label(
-            self.frame_despesas,
-            textvariable=linha["valor_var"],
+        expense_row["valor_label"] = ttk.Label(
+            self.expenses_frame,
+            textvariable=expense_row["valor_var"],
             anchor="e"
         )
-        linha["valor_label"].grid(
+        expense_row["valor_label"].grid(
             row=row_num, column=6, padx=5, pady=2, sticky="ew"
         )
 
-    def criar_removedor(self, linha, row_num):
-        linha["removedor"] = ttk.Button(
-            self.frame_despesas,
+    def create_remover(self, expense_row, row_num):
+        expense_row["removedor"] = ttk.Button(
+            self.expenses_frame,
             text="X",
             width=3,
-            command=lambda: self.remover_linha(linha),
+            command=lambda: self.remove_row(expense_row),
         )
-        linha["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
+        expense_row["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
 
-    def regridar_widgets(self, linhas_despesas):
-        for index, linha in enumerate(linhas_despesas):
+    def regrid_widgets(self, expenses_rows):
+        for index, expense_row in enumerate(expenses_rows):
             row_num = index + 1
-            linha['data_entry'].grid(
+            expense_row['data_entry'].grid(
                 row=row_num,
                 column=0,
                 padx=5,
                 pady=2,
                 sticky="ew"
             )
-            linha['tipo_combobox'].grid(
+            expense_row['tipo_combobox'].grid(
                 row=row_num,
                 column=2,
                 padx=5,
@@ -232,104 +236,104 @@ class AbaDespesas:
                 sticky="ew"
             )
 
-            if linha['tipo_var'].get() in ["Almoço", "Janta"]:
-                linha['loc_irrelevante'].grid_remove()
-                linha['loc_frame'].grid(
+            if expense_row['tipo_var'].get() in ["Almoço", "Janta"]:
+                expense_row['loc_irrelevante'].grid_remove()
+                expense_row['loc_frame'].grid(
                     row=row_num,
                     column=4,
                     padx=5,
                     pady=2
                 )
             else:
-                linha['loc_frame'].grid_remove()
-                linha['loc_irrelevante'].grid(
+                expense_row['loc_frame'].grid_remove()
+                expense_row['loc_irrelevante'].grid(
                     row=row_num,
                     column=4,
                     padx=5,
                     pady=2
                 )
 
-            linha['valor_label'].grid(
+            expense_row['valor_label'].grid(
                 row=row_num,
                 column=6,
                 padx=5,
                 pady=2,
                 sticky="ew"
             )
-            linha['removedor'].grid(
+            expense_row['removedor'].grid(
                 row=row_num,
                 column=8,
                 padx=25,
                 pady=2
             )
 
-    def atualizar_loc(self, linha, row_num):
-        tipo_str = linha["tipo_var"].get()
-        if not tipo_str or tipo_str not in self.cfg:
-            self.mostrar_localidade_irrelevante(linha, row_num)
+    def update_location(self, expense_row, row_num):
+        type_str = expense_row["tipo_var"].get()
+        if not type_str or type_str not in self.config:
+            self.location_irrelevant(expense_row, row_num)
             return
-        pct_capitais = self.cfg[tipo_str]['Capitais']
-        pct_outras = self.cfg[tipo_str]['Outras']
+        percentage_capitals = self.config[type_str]['Capitais']
+        percentage_others = self.config[type_str]['Outras']
 
-        if pct_capitais != pct_outras:
-            self.mostrar_localidade_relevante(linha, row_num)
+        if percentage_capitals != percentage_others:
+            self.location_relevant(expense_row, row_num)
         else:
-            self.mostrar_localidade_irrelevante(linha, row_num)
+            self.location_irrelevant(expense_row, row_num)
 
-    def atualizar_valor(self, linha):
-        tipo = linha["tipo_var"].get()
-        loc = linha["loc_var"].get()
-        pct = self.cfg.get(tipo, {}).get(loc, 0.0)
-        linha["valor_var"].set(
-            f'R$ {(self.cfg["Salário Mínimo"]/100)*pct:.2f}'.replace(
+    def update_value(self, expense_row):
+        type_str = expense_row["tipo_var"].get()
+        location_str = expense_row["loc_var"].get()
+        percentage = self.config.get(type_str, {}).get(location_str, 0.0)
+        expense_row["valor_var"].set(
+            f'R$ {(self.config["Salário Mínimo"]/100)*percentage:.2f}'.replace(
                 ".", ","
             ))
 
-    def remover_linha(self, linha):
-        for widget in list(linha.values()):
+    def remove_row(self, expense_row):
+        for widget in list(expense_row.values()):
             if isinstance(widget, Tk.Widget):
                 widget.destroy()
-        self.linhas_despesas.remove(linha)
+        self.expenses_rows.remove(expense_row)
 
         # Flake8 Reclamaria que minha reclamação é longa e.e
         # noqa: E501 Porque cargas d'água o tkinter não tá esvaziando isso de imediato? Gambiarra:
-        self.regridar_widgets(self.linhas_despesas)
+        self.regrid_widgets(self.expenses_rows)
 
-    def atualizar_desps(self):
-        for i, linha in enumerate(self.linhas_despesas):
-            self.atualizar_loc(linha, i+1)
-            self.atualizar_valor(linha)
+    def update_expenses_tab(self):
+        for index, row in enumerate(self.expenses_rows):
+            self.update_location(row, index+1)
+            self.update_value(row)
 
-    def carregar_despesas(self, despesas_viagem):
-        for despesa in despesas_viagem:
-            self.criar_linha(despesa)
+    def load_expenses(self, db_expenses_data):
+        for entry in db_expenses_data:
+            self.create_row(entry)
 
-    def fechar_despesas(self, obj=None):
-        for linha in list(self.linhas_despesas):
-            self.remover_linha(linha)
-        if not obj:
-            self.criar_linha()
+    def remove_expenses_rows(self, window_action=None):
+        for expense_row in list(self.expenses_rows):
+            self.remove_row(expense_row)
+        if not window_action:
+            self.create_row()
 
-    def get_dados_despesas(self):
-        dados_despesas = []
-        for linha in self.linhas_despesas:
-            data_str = linha['data_var'].get()
-            tipo_str = linha['tipo_var'].get()
-            loc_str = linha['loc_var'].get()
-            valor_str = linha['valor_var'].get()
-            valor_float = float(
-                valor_str.replace('R$ ', '').replace('.', '').replace(',', '.')
+    def get_expenses_data(self):
+        expenses_data = []
+        for expense_row in self.expenses_rows:
+            date_str = expense_row['data_var'].get()
+            type_str = expense_row['tipo_var'].get()
+            location_str = expense_row['loc_var'].get()
+            value_str = expense_row['valor_var'].get()
+            value_float = float(
+                value_str.replace('R$ ', '').replace('.', '').replace(',', '.')
             )
-            pct_capitais = self.cfg[tipo_str]['Capitais']
-            pct_outras = self.cfg[tipo_str]['Outras']
+            percentage_capitals = self.config[type_str]['Capitais']
+            percentage_others = self.config[type_str]['Outras']
 
-            if pct_capitais == pct_outras:
-                loc_str = 'Irrelevante'
-            despesa = {
-                'data_desp': data_str,
-                'tipo_desp': tipo_str,
-                'loc_desp': loc_str,
-                'valor_desp': valor_float
+            if percentage_capitals == percentage_others:
+                location_str = 'Irrelevante'
+            expense_entry = {
+                'data_desp': date_str,
+                'tipo_desp': type_str,
+                'loc_desp': location_str,
+                'valor_desp': value_float
             }
-            dados_despesas.append(despesa)
-        return dados_despesas
+            expenses_data.append(expense_entry)
+        return expenses_data

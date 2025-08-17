@@ -4,18 +4,18 @@ from datetime import datetime
 
 
 class AbaGas:
-    def __init__(self, frame_pai, controller):
-        self.frame_pai = frame_pai
+    def __init__(self, parent_frame, controller):
+        self.parent_frame = parent_frame
         self.controller = controller
-        self.cfg = self.controller.cfg_gas
-        self.validando_dist = False
+        self.config = self.controller.fuel_config
+        self.validating_distance = False
 
-        self.linhas_gas = []
+        self.fuel_rows = []
 
-    def criar_frame_aba(self):
-        canvas = ttk.Canvas(self.frame_pai)
+    def create_tab_frame(self):
+        canvas = ttk.Canvas(self.parent_frame)
         scrollbar = ttk.Scrollbar(
-            self.frame_pai, orient="vertical", command=canvas.yview
+            self.parent_frame, orient="vertical", command=canvas.yview
         )
 
         scrollbar.pack(side="right", fill="y")
@@ -23,87 +23,87 @@ class AbaGas:
 
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        self.frame_gas = ttk.Frame(canvas)
+        self.fuel_frame = ttk.Frame(canvas)
         frame_id = canvas.create_window(
-            (0, 0), window=self.frame_gas, anchor="nw"
+            (0, 0), window=self.fuel_frame, anchor="nw"
         )
 
-        def centralizar_frame(event):
+        def center_frame(event):
             canvas_width = event.width
-            frame_width = self.frame_gas.winfo_reqwidth()
+            frame_width = self.fuel_frame.winfo_reqwidth()
             x_pos = (canvas_width - frame_width) // 2
             canvas.coords(frame_id, x_pos if x_pos > 0 else 0, 0)
 
-        def redimensionar_frame(event):
+        def resize_frame(event):
             canvas.configure(scrollregion=canvas.bbox("all"))
 
-        self.frame_gas.bind("<Configure>", redimensionar_frame)
-        canvas.bind("<Configure>", centralizar_frame)
+        self.fuel_frame.bind("<Configure>", resize_frame)
+        canvas.bind("<Configure>", center_frame)
 
-    def criar_headers(self):
+    def create_headers(self):
         headers = ["Data", "Trajeto", "Distância", "Valor", ""]
-        col_dados = len(headers)
+        col_num = len(headers)
         for col in range(5):
-            self.frame_gas.grid_columnconfigure(col * 2, weight=0)
+            self.fuel_frame.grid_columnconfigure(col * 2, weight=0)
 
         for col, header in enumerate(headers):
             ttk.Label(
-                self.frame_gas,
+                self.fuel_frame,
                 text=header,
                 anchor="center",
                 font=("Helvetica", 10, "bold"),
             ).grid(row=0, column=col * 2, padx=5, pady=2, sticky="ew")
-            if col < col_dados - 1:
+            if col < col_num - 1:
                 ttk.Separator(
-                    self.frame_gas,
+                    self.fuel_frame,
                     orient="vertical",
                 ).grid(row=0, column=col * 2 + 1, sticky="ns")
 
-    def criar_linha(self, gas_viagem=None):
-        if gas_viagem:
-            data_inicial = gas_viagem['data']
-            destino_inicial = gas_viagem['destino']
-            dist_inicial = gas_viagem['dist']
+    def create_row(self, db_fuel_data=None):
+        if db_fuel_data:
+            date_str = db_fuel_data['data']
+            route_str = db_fuel_data['destino']
+            distance_str = db_fuel_data['dist']
         else:
-            data_inicial = None
-            destino_inicial = None
-            dist_inicial = None
+            date_str = None
+            route_str = None
+            distance_str = None
 
-        linha = {
-            'data_gas': data_inicial,
-            'destino_gas': destino_inicial,
-            'dist_gas': dist_inicial
+        fuel_row = {
+            'data_gas': date_str,
+            'destino_gas': route_str,
+            'dist_gas': distance_str
         }
-        row_num = len(self.linhas_gas) + 1
+        row_num = len(self.fuel_rows) + 1
 
-        self.criar_campo_data(linha, row_num)
-        self.criar_campo_destino(linha, row_num)
-        self.criar_campo_dist(linha, row_num)
-        self.criar_campo_valor(linha, row_num)
-        self.criar_removedor(linha, row_num)
-        self.atualizar_valor(linha)
+        self.create_date_field(fuel_row, row_num)
+        self.create_route_field(fuel_row, row_num)
+        self.create_distance_field(fuel_row, row_num)
+        self.create_value_field(fuel_row, row_num)
+        self.create_remover(fuel_row, row_num)
+        self.update_value(fuel_row)
 
-        self.linhas_gas.append(linha)
+        self.fuel_rows.append(fuel_row)
 
-    def criar_campo_data(self, linha, row_num):
-        if linha['data_gas']:
-            data_inicial_datetime = datetime.strptime(
-                linha['data_gas'], '%d/%m/%Y'
+    def create_date_field(self, fuel_row, row_num):
+        if fuel_row['data_gas']:
+            date_datetime = datetime.strptime(
+                fuel_row['data_gas'], '%d/%m/%Y'
             )
             data_entry = ttk.DateEntry(
-                self.frame_gas,
+                self.fuel_frame,
                 dateformat="%d/%m/%Y",
-                startdate=data_inicial_datetime
+                startdate=date_datetime
             )
 
         else:
             data_entry = ttk.DateEntry(
-                self.frame_gas,
+                self.fuel_frame,
                 dateformat="%d/%m/%Y",
                 startdate=datetime.now()
             )
-        linha["data_entry"] = data_entry
-        linha["data_gas"] = data_entry.entry
+        fuel_row["data_entry"] = data_entry
+        fuel_row["data_gas"] = data_entry.entry
         data_entry.grid(
             row=row_num,
             column=0,
@@ -112,50 +112,52 @@ class AbaGas:
             sticky="ew"
         )
 
-    def criar_campo_destino(self, linha, row_num):
-        if not linha['destino_gas']:
-            linha['destino_gas'] = Tk.StringVar()
+    def create_route_field(self, fuel_row, row_num):
+        if not fuel_row['destino_gas']:
+            fuel_row['destino_gas'] = Tk.StringVar()
         else:
-            linha['destino_gas'] = Tk.StringVar(value=linha['destino_gas'])
+            fuel_row['destino_gas'] = Tk.StringVar(
+                value=fuel_row['destino_gas']
+            )
 
-        destino_entry = ttk.Entry(
-            self.frame_gas,
-            textvariable=linha['destino_gas']
+        route_entry = ttk.Entry(
+            self.fuel_frame,
+            textvariable=fuel_row['destino_gas']
         )
-        destino_entry.grid(
+        route_entry.grid(
             row=row_num,
             column=2,
             padx=5,
             pady=2,
             sticky='ew'
         )
-        linha['destino_entry'] = destino_entry
+        fuel_row['destino_entry'] = route_entry
 
-    def criar_campo_dist(self, linha, row_num):
-        if not linha['dist_gas']:
-            linha['dist_gas'] = Tk.StringVar()
+    def create_distance_field(self, fuel_row, row_num):
+        if not fuel_row['dist_gas']:
+            fuel_row['dist_gas'] = Tk.StringVar()
         else:
-            linha['dist_gas'] = Tk.StringVar(value=linha['dist_gas'])
-        frame_dist = ttk.Frame(
-            self.frame_gas
+            fuel_row['dist_gas'] = Tk.StringVar(value=fuel_row['dist_gas'])
+        distance_frame = ttk.Frame(
+            self.fuel_frame
         )
-        linha['frame_dist'] = frame_dist
-        frame_dist.grid(
+        fuel_row['frame_dist'] = distance_frame
+        distance_frame.grid(
             row=row_num,
             column=4,
         )
-        dist_entry = ttk.Entry(
-            frame_dist,
-            textvariable=linha['dist_gas'],
+        distance_entry = ttk.Entry(
+            distance_frame,
+            textvariable=fuel_row['dist_gas'],
             justify='right'
         )
-        linha['dist_entry'] = dist_entry
+        fuel_row['dist_entry'] = distance_entry
         km_label = ttk.Label(
-            frame_dist,
+            distance_frame,
             text='km'
         )
-        linha['km_label'] = km_label
-        dist_entry.pack(
+        fuel_row['km_label'] = km_label
+        distance_entry.pack(
             side=Tk.LEFT,
             fill=Tk.BOTH,
             expand=True,
@@ -165,115 +167,115 @@ class AbaGas:
         km_label.pack(
             side=Tk.LEFT
         )
-        linha['dist_gas'].trace_add(
+        fuel_row['dist_gas'].trace_add(
             'write',
-            lambda *args, lin=linha: self.validar_dist(lin, *args)
+            lambda *args, r=fuel_row: self.validate_distance(r, *args)
         )
-        linha['dist_entry'].bind('<Key>', self.empurrar_caret)
-        linha['dist_entry'].bind('<Button-1>', self.empurrar_caret)
+        fuel_row['dist_entry'].bind('<Key>', self.push_caret_end)
+        fuel_row['dist_entry'].bind('<Button-1>', self.push_caret_end)
 
-    def criar_campo_valor(self, linha, row_num):
-        valor = Tk.StringVar(value='R$ 0,00')
-        linha['valor_gas'] = valor
-        valor_entry = ttk.Label(
-            self.frame_gas,
-            textvariable=linha['valor_gas'],
+    def create_value_field(self, fuel_row, row_num):
+        value_var = Tk.StringVar(value='R$ 0,00')
+        fuel_row['valor_gas'] = value_var
+        value_label = ttk.Label(
+            self.fuel_frame,
+            textvariable=fuel_row['valor_gas'],
             justify='right'
         )
-        valor_entry.grid(
+        value_label.grid(
             row=row_num,
             column=6,
             padx=5,
             pady=2
         )
-        linha['valor_entry'] = valor_entry
+        fuel_row['valor_entry'] = value_label
 
-    def criar_removedor(self, linha, row_num):
-        linha['removedor'] = ttk.Button(
-            self.frame_gas,
+    def create_remover(self, fuel_row, row_num):
+        fuel_row['removedor'] = ttk.Button(
+            self.fuel_frame,
             text='X',
             width=3,
-            command=lambda: self.remover_linha(linha)
+            command=lambda: self.remove_row(fuel_row)
         )
-        linha['removedor'].grid(row=row_num, column=8, padx=25, pady=2)
+        fuel_row['removedor'].grid(row=row_num, column=8, padx=25, pady=2)
 
-    def remover_linha(self, linha):
-        for item in list(linha.values()):
+    def remove_row(self, fuel_row):
+        for item in list(fuel_row.values()):
             if isinstance(item, Tk.Widget):
                 item.destroy()
-        self.linhas_gas.remove(linha)
+        self.fuel_rows.remove(fuel_row)
 
-    def atualizar_valor(self, linha):
+    def update_value(self, fuel_row):
         try:
-            dist_str = linha.get('dist_gas').get()
-            dist_float = float(dist_str.replace(',', '.'))
+            distance_str = fuel_row.get('dist_gas').get()
+            distance_float = float(distance_str.replace(',', '.'))
         except ValueError:
-            dist_float = 0.0
-        consumo = self.cfg.get('consumo', 0.0)
-        custo_gas = self.cfg.get('custo_gas', 0.0)
-        valor = (custo_gas * dist_float) / (consumo)
-        linha['valor_gas'].set(f'R$ {valor:.2f}'.replace('.', ','))
+            distance_float = 0.0
+        avg_consumption = self.config.get('consumo', 0.0)
+        fuel_cost = self.config.get('custo_gas', 0.0)
+        value = (fuel_cost * distance_float) / (avg_consumption)
+        fuel_row['valor_gas'].set(f'R$ {value:.2f}'.replace('.', ','))
 
-    def atualizar_gas(self):
-        for linha in self.linhas_gas:
-            self.atualizar_valor(linha)
+    def update_fuel_tab(self):
+        for fuel_row in self.fuel_rows:
+            self.update_value(fuel_row)
 
-    def carregar_gas(self, gas_viagem):
-        for linha in gas_viagem:
-            self.criar_linha(linha)
+    def load_fuel(self, db_fuel_data):
+        for entry in db_fuel_data:
+            self.create_row(entry)
 
-    def formatar_dist(self, num_float,):
+    def format_distance(self, num_float,):
         return f'{num_float:.1f}'.replace('.', ',')
 
-    def validar_dist(self, linha, *args):
-        if self.validando_dist:
+    def validate_distance(self, fuel_row, *args):
+        if self.validating_distance:
             return
-        self.validando_dist = True
+        self.validating_distance = True
 
-        valor_str = linha['dist_gas'].get()
-        valor_cru = "".join(filter(str.isdigit, valor_str))
-        if not valor_cru:
-            valor_float = 0.0
+        value_str = fuel_row['dist_gas'].get()
+        value_raw = "".join(filter(str.isdigit, value_str))
+        if not value_raw:
+            value_float = 0.0
         else:
-            valor_float = int(valor_cru) / 10
+            value_float = int(value_raw) / 10
 
-        linha['dist_gas'].set(self.formatar_dist(valor_float))
-        self.atualizar_valor(linha)
+        fuel_row['dist_gas'].set(self.format_distance(value_float))
+        self.update_value(fuel_row)
 
-        self.validando_dist = False
+        self.validating_distance = False
 
-    def empurrar_caret(self, event):
+    def push_caret_end(self, event):
         event.widget.after_idle(event.widget.icursor, 'end')
 
-    def get_dados_gas(self):
-        dados_gas = []
-        for linha in self.linhas_gas:
-            data_str = linha['data_gas'].get()
+    def get_fuel_data(self):
+        fuel_data = []
+        for fuel_row in self.fuel_rows:
+            data_str = fuel_row['data_gas'].get()
             try:
-                tipo_str = linha['destino_gas'].get()
+                tipo_str = fuel_row['destino_gas'].get()
             except AttributeError:
-                tipo_str = linha['destino_gas']
-            loc_str = linha['dist_gas'].get()
-            valor_cru = linha['valor_gas'].get()
-            valor_str = (
-                valor_cru
+                tipo_str = fuel_row['destino_gas']
+            location_str = fuel_row['dist_gas'].get()
+            value_raw = fuel_row['valor_gas'].get()
+            value_str = (
+                value_raw
                 .replace('R$ ', '')
                 .replace('.', '')
                 .replace(',', '.')
             )
-            valor_float = float(valor_str)
+            value_float = float(value_str)
 
-            gas = {
+            fuel_entry = {
                 'data_gas': data_str,
                 'destino_gas': tipo_str,
-                'dist_gas': loc_str,
-                'valor_gas': valor_float
+                'dist_gas': location_str,
+                'valor_gas': value_float
             }
-            dados_gas.append(gas)
-        return dados_gas
+            fuel_data.append(fuel_entry)
+        return fuel_data
 
-    def fechar_gas(self, obj=None):
-        for linha in list(self.linhas_gas):
-            self.remover_linha(linha)
-        if not obj:
-            self.criar_linha()
+    def remove_fuel_rows(self, window_acton=None):
+        for fuel_row in list(self.fuel_rows):
+            self.remove_row(fuel_row)
+        if not window_acton:
+            self.create_row()

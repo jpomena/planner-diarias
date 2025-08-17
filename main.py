@@ -1,6 +1,6 @@
-from src import Sasori
+from src import MainController
 
 if __name__ == "__main__":
-    app = Sasori()
-    app.mw.iconbitmap('icon.ico')
-    app.mw.mainloop()
+    app = MainController()
+    app.main_window.iconbitmap('icon.ico')
+    app.main_window.mainloop()

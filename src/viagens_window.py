@@ -4,12 +4,18 @@ import ttkbootstrap as ttk
 
 
 class WindowViagem(Tk.Toplevel):
-    def __init__(self, master, controller, obj, callback_carregar_viagem=None):
+    def __init__(
+        self,
+        master,
+        controller,
+        window_action,
+        load_trip_callback=None
+    ):
         super().__init__(master)
         self.master = master
         self.controller = controller
-        self.callback_carregar_viagem = callback_carregar_viagem
-        self.obj = obj
+        self.load_trip_callback = load_trip_callback
+        self.window_action = window_action
 
         self.title("Abrir Viagem")
         self.geometry("300x150")
@@ -17,13 +23,13 @@ class WindowViagem(Tk.Toplevel):
         self.transient(master)
         self.grab_set()
 
-        self.lista_viagens = self.controller.db.get_nome_viagens()
-        self.nome_viagem = Tk.StringVar()
+        self.trip_names = self.controller.db.get_trip_names()
+        self.trip_name_var = Tk.StringVar()
 
-        self.criar_combobox()
-        self.criar_botoes_open_del()
+        self.create_combobox()
+        self.create_open_del_btn()
 
-    def criar_combobox(self):
+    def create_combobox(self):
         self.main_frame = ttk.Frame(self, padding=10)
         self.main_frame.pack(fill=Tk.BOTH, expand=True)
 
@@ -31,46 +37,46 @@ class WindowViagem(Tk.Toplevel):
 
         self.trip_combobox = ttk.Combobox(
             self.main_frame,
-            textvariable=self.nome_viagem,
-            values=self.lista_viagens,
+            textvariable=self.trip_name_var,
+            values=self.trip_names,
             state="readonly"
         )
         self.trip_combobox.pack(pady=5, fill=Tk.X, expand=True)
 
-        if self.lista_viagens:
-            self.trip_combobox.set(self.lista_viagens[0])
+        if self.trip_names:
+            self.trip_combobox.set(self.trip_names[0])
         else:
             self.trip_combobox.set("Nenhuma viagem salva")
             self.trip_combobox.config(state="disabled")
 
-    def criar_botoes_open_del(self):
-        if self.obj == 'open':
-            open_button = ttk.Button(
+    def create_open_del_btn(self):
+        if self.window_action == 'open':
+            open_btn = ttk.Button(
                 self.main_frame,
                 text="Abrir",
-                command=self.abrir_viagem,
-                state="disabled" if not self.lista_viagens else "normal"
+                command=self.load_trip,
+                state="disabled" if not self.trip_names else "normal"
             )
-            open_button.pack(pady=10)
-        elif self.obj == 'del':
-            del_button = ttk.Button(
+            open_btn.pack(pady=10)
+        elif self.window_action == 'del':
+            del_btn = ttk.Button(
                 self.main_frame,
                 text="Apagar",
-                command=self.apagar_viagem,
-                state="disabled" if not self.lista_viagens else "normal"
+                command=self.del_trip,
+                state="disabled" if not self.trip_names else "normal"
             )
-            del_button.pack(pady=10)
+            del_btn.pack(pady=10)
 
-    def abrir_viagem(self):
-        nome_viagem_str = self.nome_viagem.get()
-        if nome_viagem_str not in ('', 'Nenhuma viagem salva'):
-            self.callback_carregar_viagem(nome_viagem_str)
+    def load_trip(self):
+        trip_name_str = self.trip_name_var.get()
+        if trip_name_str not in ('', 'Nenhuma viagem salva'):
+            self.load_trip_callback(trip_name_str)
         self.destroy()
 
-    def apagar_viagem(self):
-        nome_viagem_str = self.nome_viagem.get()
-        self.controller.db.del_viagem(nome_viagem_str)
+    def del_trip(self):
+        trip_name_str = self.trip_name_var.get()
+        self.controller.db.del_trip(trip_name_str)
         messagebox.showinfo(
-            'Sucesso', f'A viagem {nome_viagem_str} foi apagada com sucesso!'
+            'Sucesso', f'A viagem {trip_name_str} foi apagada com sucesso!'
         )
         self.destroy()

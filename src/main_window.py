@@ -13,32 +13,32 @@ class MainWindow(ttk.Window):
         self.title("Planner de Diárias")
         self.geometry("750x900")
 
-        self.frame_0 = ttk.Frame(self, padding=20)
-        self.frame_0.pack(fill=Tk.BOTH, expand=True)
-        self.frame_topo = ttk.Frame(
-            self.frame_0
+        self.root_frame = ttk.Frame(self, padding=20)
+        self.root_frame.pack(fill=Tk.BOTH, expand=True)
+        self.top_frame = ttk.Frame(
+            self.root_frame
         )
-        self.frame_topo.pack(
+        self.top_frame.pack(
             side=Tk.TOP,
             fill=Tk.X,
             padx=5,
             pady=2
         )
 
-    def aviso(self, info):
-        messagebox.showinfo(info[0], info[1])
+    def show_info(self, info_message):
+        messagebox.showinfo(info_message[0], info_message[1])
 
-    def criar_frame_nome(self, nome_viagem=None):
-        if not nome_viagem:
-            self.nome_viagem = Tk.StringVar()
+    def create_trip_name_frame(self, trip_name_str=None):
+        if not trip_name_str:
+            self.trip_name_var = Tk.StringVar()
         else:
-            self.nome_viagem = Tk.StringVar(value=nome_viagem)
-        self.frame_nome = ttk.LabelFrame(
-            self.frame_topo,
+            self.trip_name_var = Tk.StringVar(value=trip_name_str)
+        self.trip_name_frame = ttk.LabelFrame(
+            self.top_frame,
             text='Nome da Viagem',
             padding=7
         )
-        self.frame_nome.pack(
+        self.trip_name_frame.pack(
             side=Tk.LEFT,
             fill=Tk.X,
             expand=True,
@@ -46,19 +46,19 @@ class MainWindow(ttk.Window):
             pady=2
         )
 
-        entry_nome = ttk.Entry(
-            self.frame_nome,
-            textvariable=self.nome_viagem
+        trip_name_entry = ttk.Entry(
+            self.trip_name_frame,
+            textvariable=self.trip_name_var
         )
-        entry_nome.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        trip_name_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
 
-    def criar_frame_controle(self):
-        self.frame_controle = ttk.LabelFrame(
-            self.frame_topo,
+    def create_ctrl_panel_frame(self):
+        self.ctrl_panel_frame = ttk.LabelFrame(
+            self.top_frame,
             text="Controles",
             padding=5
         )
-        self.frame_controle.pack(
+        self.ctrl_panel_frame.pack(
             side=Tk.RIGHT,
             fill=Tk.X,
             expand=True,
@@ -66,104 +66,104 @@ class MainWindow(ttk.Window):
             pady=2
         )
 
-    def criar_botoes_controle(self):
-        self.tipo_cfg = 'despesas'
-        frame_botoes = ttk.Frame(self.frame_controle)
-        frame_botoes.pack(expand=True, anchor='center')
+    def create_ctrl_btn(self):
+        self.current_tab = 'despesas'
+        ctrl_btn_frame = ttk.Frame(self.ctrl_panel_frame)
+        ctrl_btn_frame.pack(expand=True, anchor='center')
 
-        self.botao_add_linha = ttk.Button(
-            frame_botoes,
+        self.add_row_btn = ttk.Button(
+            ctrl_btn_frame,
             text="Adicionar Linha",
-            command=self.criar_linha
+            command=self.create_row
         )
-        self.botao_report = ttk.Button(
-            frame_botoes,
+        self.generate_report_btn = ttk.Button(
+            ctrl_btn_frame,
             text="Gerar Relatório",
-            command=self.controller.gerar_report
+            command=self.controller.generate_report
         )
-        self.botao_cfg = ttk.Button(
-            frame_botoes,
+        self.open_config_btn = ttk.Button(
+            ctrl_btn_frame,
             text="Configurações",
-            command=lambda: self.controller.abrir_cfg(self.tipo_cfg)
+            command=lambda: self.controller.open_config(self.current_tab)
         )
 
-        self.botao_add_linha.pack(side=Tk.LEFT, padx=5, pady=4)
-        self.botao_report.pack(side=Tk.LEFT, padx=5, pady=4)
-        self.botao_cfg.pack(side=Tk.LEFT, padx=5, pady=4)
+        self.add_row_btn.pack(side=Tk.LEFT, padx=5, pady=4)
+        self.generate_report_btn.pack(side=Tk.LEFT, padx=5, pady=4)
+        self.open_config_btn.pack(side=Tk.LEFT, padx=5, pady=4)
 
-    def criar_linha(self):
-        if self.tipo_cfg == 'despesas':
-            self.aba_despesas.criar_linha()
-        elif self.tipo_cfg == 'gas':
-            self.aba_gas.criar_linha()
+    def create_row(self):
+        if self.current_tab == 'despesas':
+            self.expenses_tab.create_row()
+        elif self.current_tab == 'gas':
+            self.fuel_tab.create_row()
 
-    def criar_botoes_sql(self):
-        frame_sql = ttk.Frame(
-            self.frame_0
+    def create_database_btn(self):
+        database_ctrl_frame = ttk.Frame(
+            self.root_frame
         )
-        frame_sql.pack(side=Tk.BOTTOM, anchor='s', padx=5, pady=2)
+        database_ctrl_frame.pack(side=Tk.BOTTOM, anchor='s', padx=5, pady=2)
 
-        self.botao_abrir_viagem = ttk.Button(
-            frame_sql,
+        self.create_open_trip_window_btn = ttk.Button(
+            database_ctrl_frame,
             text='Abrir Viagem',
-            command=self.controller.viagem_window_open
+            command=self.controller.create_open_trip_window
         )
-        self.botao_fechar_viagem = ttk.Button(
-            frame_sql,
+        self.close_trip_btn = ttk.Button(
+            database_ctrl_frame,
             text='Fechar Viagem',
-            command=self.controller.fechar_viagem
+            command=self.controller.close_trip
         )
-        self.botao_add_viagem = ttk.Button(
-            frame_sql,
+        self.save_trip_btn = ttk.Button(
+            database_ctrl_frame,
             text='Salvar Viagem',
-            command=lambda: self.controller.salvar_viagem(self.nome_viagem)
+            command=lambda: self.controller.save_trip(self.trip_name_var)
         )
-        self.botao_del_viagem = ttk.Button(
-            frame_sql,
+        self.create_del_trip_window_btn = ttk.Button(
+            database_ctrl_frame,
             text='Apagar Viagem',
-            command=self.controller.viagem_window_del
+            command=self.controller.create_del_trip_window
         )
 
-        self.botao_abrir_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
-        self.botao_fechar_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
-        self.botao_add_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
-        self.botao_del_viagem.pack(side=Tk.LEFT, padx=5, pady=5)
+        self.create_open_trip_window_btn.pack(side=Tk.LEFT, padx=5, pady=5)
+        self.close_trip_btn.pack(side=Tk.LEFT, padx=5, pady=5)
+        self.save_trip_btn.pack(side=Tk.LEFT, padx=5, pady=5)
+        self.create_del_trip_window_btn.pack(side=Tk.LEFT, padx=5, pady=5)
 
-    def criar_notebook(self):
-        self.notebook = ttk.Notebook(self.frame_0)
+    def create_notebook(self):
+        self.notebook = ttk.Notebook(self.root_frame)
         self.notebook.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
-        self.notebook.bind("<<NotebookTabChanged>>", self.trocar_aba)
+        self.notebook.bind("<<NotebookTabChanged>>", self.change_tab)
 
-    def criar_aba_despesas(self):
-        frame_pai_despesas = ttk.Frame(self.frame_0)
-        self.notebook.add(frame_pai_despesas, text='Despesas')
-        self.aba_despesas = AbaDespesas(frame_pai_despesas, self.controller)
-        self.aba_despesas.criar_frame_aba()
-        self.aba_despesas.criar_headers()
-        self.aba_despesas.criar_linha()
+    def create_expenses_tab(self):
+        expenses_parent_frame = ttk.Frame(self.root_frame)
+        self.notebook.add(expenses_parent_frame, text='Despesas')
+        self.expenses_tab = AbaDespesas(expenses_parent_frame, self.controller)
+        self.expenses_tab.create_tab_frame()
+        self.expenses_tab.create_headers()
+        self.expenses_tab.create_row()
 
-    def criar_aba_gas(self):
-        frame_pai_gas = ttk.Frame(self.frame_0)
-        self.notebook.add(frame_pai_gas, text='Combustível')
-        self.aba_gas = AbaGas(frame_pai_gas, self.controller)
-        self.aba_gas.criar_frame_aba()
-        self.aba_gas.criar_headers()
-        self.aba_gas.criar_linha()
+    def create_fuel_tab(self):
+        fuel_parent_frame = ttk.Frame(self.root_frame)
+        self.notebook.add(fuel_parent_frame, text='Combustível')
+        self.fuel_tab = AbaGas(fuel_parent_frame, self.controller)
+        self.fuel_tab.create_tab_frame()
+        self.fuel_tab.create_headers()
+        self.fuel_tab.create_row()
 
-    def carregar_viagem(self, despesas_viagem, gas_viagem, nome_viagem):
-        self.aba_despesas.carregar_despesas(despesas_viagem)
-        self.aba_gas.carregar_gas(gas_viagem)
-        self.nome_viagem.set(nome_viagem)
+    def load_trip(self, db_expenses_data, db_fuel_data, trip_name_str):
+        self.expenses_tab.load_expenses(db_expenses_data)
+        self.fuel_tab.load_fuel(db_fuel_data)
+        self.trip_name_var.set(trip_name_str)
 
-    def fechar_viagem(self, obj=None):
-        self.aba_despesas.fechar_despesas(obj)
-        self.aba_gas.fechar_gas(obj)
+    def destroy_trip_widgets(self, window_action=None):
+        self.expenses_tab.remove_expenses_rows(window_action)
+        self.fuel_tab.remove_fuel_rows(window_action)
 
-    def atualizar_abas(self):
-        self.aba_despesas.atualizar_desps()
-        self.aba_gas.atualizar_gas()
+    def update_tabs(self):
+        self.expenses_tab.update_expenses_tab()
+        self.fuel_tab.update_fuel_tab()
 
-    def trocar_aba(self, event):
-        aba_selecionada = self.notebook.index(self.notebook.select())
-        abas = {0: 'despesas', 1: 'gas', 2: 'aerea', 3: 'hotel'}
-        self.tipo_cfg = abas[int(aba_selecionada)]
+    def change_tab(self, event):
+        selected_tab = self.notebook.index(self.notebook.select())
+        tab_mapping = {0: 'despesas', 1: 'gas', 2: 'aerea', 3: 'hotel'}
+        self.current_tab = tab_mapping[int(selected_tab)]

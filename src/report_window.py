@@ -3,7 +3,7 @@ import ttkbootstrap as ttk
 
 
 class ReportWindow(Tk.Toplevel):
-    def __init__(self, master, linhas_despesas):
+    def __init__(self, master, expenses_rows):
         super().__init__(master)
         self.master = master
         self.title('Resumo')
@@ -11,19 +11,19 @@ class ReportWindow(Tk.Toplevel):
         self.resizable(False, False)
         self.transient(master)
         self.grab_set()
-        self.linhas_despesas = linhas_despesas
+        self.expenses_rows = expenses_rows
 
-        self.frame_resumo = ttk.Frame(
+        self.report_frame = ttk.Frame(
             self
         )
-        self.frame_resumo.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
+        self.report_frame.pack(fill=Tk.BOTH, expand=True, padx=5, pady=2)
 
-        self.criar_tabela_despesas()
-        self.preencher_tabela_despesas()
-        self.criar_tabela_totais()
-        self.preencher_tabela_totais()
+        self.create_expenses_table()
+        self.fill_expenses_table()
+        self.create_totals_table()
+        self.fill_totals_table()
 
-    def criar_tabela_despesas(self):
+    def create_expenses_table(self):
         columns_ids = ['data', 'tipo', 'loc', 'val']
         headers = {
             'data': 'Data',
@@ -32,57 +32,57 @@ class ReportWindow(Tk.Toplevel):
             'val': 'Valor'
         }
 
-        frame_tabela = ttk.LabelFrame(
-            self.frame_resumo,
+        table_frame = ttk.LabelFrame(
+            self.report_frame,
             text='Despesas',
             padding=10
         )
-        frame_tabela.pack(side=Tk.TOP, fill=Tk.BOTH, padx=5, pady=5)
+        table_frame.pack(side=Tk.TOP, fill=Tk.BOTH, padx=5, pady=5)
 
-        self.tabela_despesas = ttk.Treeview(
-            frame_tabela,
+        self.expenses_table = ttk.Treeview(
+            table_frame,
             columns=columns_ids,
             show='headings'
         )
-        self.tabela_despesas.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=True)
+        self.expenses_table.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=True)
 
         for col in columns_ids:
-            self.tabela_despesas.heading(f'{col}', text=f'{headers[col]}')
-            self.tabela_despesas.column(col, width=75, anchor='center')
+            self.expenses_table.heading(f'{col}', text=f'{headers[col]}')
+            self.expenses_table.column(col, width=75, anchor='center')
 
-        scroll_despesas = ttk.Scrollbar(
-            frame_tabela,
+        expenses_scrollbar = ttk.Scrollbar(
+            table_frame,
             orient=Tk.VERTICAL,
-            command=self.tabela_despesas.yview
+            command=self.expenses_table.yview
         )
-        scroll_despesas.pack(side=Tk.RIGHT, fill=Tk.Y)
-        self.tabela_despesas.configure(yscrollcommand=scroll_despesas.set)
+        expenses_scrollbar.pack(side=Tk.RIGHT, fill=Tk.Y)
+        self.expenses_table.configure(yscrollcommand=expenses_scrollbar.set)
 
-    def preencher_tabela_despesas(self):
-        for linha in self.linhas_despesas:
-            data_str = linha['data_var'].get()
-            tipo_str = linha['tipo_var'].get()
-            loc_str = linha['loc_var'].get()
-            valor_float = linha['valor_var'].get()
-            if tipo_str != 'Almoço' and tipo_str != 'Janta':
-                loc_str = 'Irrelevante'
-            self.tabela_despesas.insert(
+    def fill_expenses_table(self):
+        for expense_row in self.expenses_rows:
+            date_str = expense_row['data_var'].get()
+            type_str = expense_row['tipo_var'].get()
+            location_str = expense_row['loc_var'].get()
+            value_str = expense_row['valor_var'].get()
+            if type_str != 'Almoço' and type_str != 'Janta':
+                location_str = 'Irrelevante'
+            self.expenses_table.insert(
                 '',
                 'end',
                 values=(
-                    data_str,
-                    tipo_str,
-                    loc_str,
-                    valor_float
+                    date_str,
+                    type_str,
+                    location_str,
+                    value_str
                 ))
 
-    def criar_tabela_totais(self):
-        frame_totais = ttk.LabelFrame(
-            self.frame_resumo,
+    def create_totals_table(self):
+        totals_frame = ttk.LabelFrame(
+            self.report_frame,
             text='Totais',
             padding=10
         )
-        frame_totais.pack(
+        totals_frame.pack(
             side=Tk.TOP,
             fill=Tk.BOTH,
             expand=True,
@@ -95,23 +95,23 @@ class ReportWindow(Tk.Toplevel):
             'tipos': 'Tipo de Despesa',
             'total': 'Total'
         }
-        self.tabela_totais = ttk.Treeview(
-            frame_totais,
+        self.totals_table = ttk.Treeview(
+            totals_frame,
             columns=columns_ids,
             show='headings'
         )
-        self.tabela_totais.pack(
+        self.totals_table.pack(
             fill=Tk.BOTH,
             expand=True,
             padx=5,
             pady=2
             )
         for col in columns_ids:
-            self.tabela_totais.heading(f'{col}', text=f'{headers[col]}')
-            self.tabela_totais.column(col, width=150, anchor='center')
+            self.totals_table.heading(f'{col}', text=f'{headers[col]}')
+            self.totals_table.column(col, width=150, anchor='center')
 
-    def preencher_tabela_totais(self):
-        tipos_despesa = [
+    def fill_totals_table(self):
+        expense_types = [
             'Lanche em Trajeto',
             'Café da Manhã',
             'Almoço',
@@ -119,23 +119,23 @@ class ReportWindow(Tk.Toplevel):
             'Janta',
             'Total'
         ]
-        totais_despesas = {}
+        expenses_totals = {}
 
-        for tipo in tipos_despesa:
-            totais_despesas[f'{tipo}'] = 0.0
+        for type in expense_types:
+            expenses_totals[f'{type}'] = 0.0
 
-        for linha in self.linhas_despesas:
-            tipo_str = linha['tipo_var'].get()
-            valor_str = linha['valor_var'].get()
-            valor_float = float(valor_str.replace('R$ ', '').replace(',', '.'))
-            totais_despesas[f'{tipo_str}'] += valor_float
-            totais_despesas['Total'] += valor_float
+        for expense_row in self.expenses_rows:
+            type_str = expense_row['tipo_var'].get()
+            value_str = expense_row['valor_var'].get()
+            value_float = float(value_str.replace('R$ ', '').replace(',', '.'))
+            expenses_totals[f'{type_str}'] += value_float
+            expenses_totals['Total'] += value_float
 
-        for tipo in tipos_despesa:
-            self.tabela_totais.insert(
+        for type in expense_types:
+            self.totals_table.insert(
                 '',
                 'end',
                 values=(
-                    f'{tipo}', (f'R$ {totais_despesas[tipo]:.2f}').replace(
+                    f'{type}', (f'R$ {expenses_totals[type]:.2f}').replace(
                         '.', ','
                     )))

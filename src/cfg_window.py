@@ -3,53 +3,53 @@ import ttkbootstrap as ttk
 
 
 class CfgWindow(Tk.Toplevel):
-    def __init__(self, master, controller, tipo_cfg):
+    def __init__(self, master, controller, current_tab):
         super().__init__(master)
-        self.mw = master
+        self.main_window = master
         self.controller = controller
-        self.cfg_despesas = self.controller.cfg_despesas
-        self.cfg_gas = self.controller.cfg_gas
-        self.tipos_despesa = list(self.cfg_despesas.keys())
-        self.validando_decimal = False
-        self.validando_moeda = False
+        self.expenses_config = self.controller.expenses_config
+        self.fuel_config = self.controller.fuel_config
+        self.expense_types = list(self.expenses_config.keys())
+        self.validating_decimal = False
+        self.validating_currency = False
 
         self.title("Configurações")
-        if tipo_cfg == 'despesas':
+        if current_tab == 'despesas':
             self.geometry("400x400")
-        elif tipo_cfg == 'gas':
+        elif current_tab == 'gas':
             self.geometry('400x150')
         self.transient(master)
         self.grab_set()
 
-        self.povoar_cfg(tipo_cfg)
+        self.populate_config(current_tab)
 
-        self.protocol('WM_DELETE_WINDOW', self.fechar)
+        self.protocol('WM_DELETE_WINDOW', self.close)
 
-    def povoar_cfg(self, tipo_cfg):
-        if tipo_cfg == 'despesas':
-            self.criar_frame_cfg_despesas()
-            self.despesas_criar_labels()
-            self.despesas_criar_entry_salario()
-            self.despesas_criar_entry_porcentagens('Capitais', 2)
-            self.despesas_criar_entry_porcentagens('Outras', 4)
+    def populate_config(self, current_tab):
+        if current_tab == 'despesas':
+            self.create_expenses_config_frame()
+            self.create_expenses_labels()
+            self.create_min_wage_entry()
+            self.create_percentages_entries('Capitais', 2)
+            self.create_percentages_entries('Outras', 4)
 
-        if tipo_cfg == 'gas':
-            self.criar_frame_cfg_gas()
-            self.criar_entry_cfg_gas_custo()
-            self.criar_entry_cfg_gas_consumo()
+        if current_tab == 'gas':
+            self.create_fuel_config_frame()
+            self.create_fuel_cost_config_entry()
+            self.create_avg_consumption_entry()
 
-    def criar_frame_cfg_despesas(self):
-        self.frame_cfg_despesas = ttk.Frame(
+    def create_expenses_config_frame(self):
+        self.expenses_config_frame = ttk.Frame(
             self,
             padding=10
         )
-        self.frame_cfg_despesas.pack(padx=5, pady=2)
-        self.frame_pct_despesas = ttk.LabelFrame(
-            self.frame_cfg_despesas,
+        self.expenses_config_frame.pack(padx=5, pady=2)
+        self.refund_percentages_frame = ttk.LabelFrame(
+            self.expenses_config_frame,
             text='Percentuais de Reembolso',
             padding=10
         )
-        self.frame_pct_despesas.grid(
+        self.refund_percentages_frame.grid(
             row=1,
             column=0,
             columnspan=5,
@@ -58,62 +58,73 @@ class CfgWindow(Tk.Toplevel):
             sticky='ew'
         )
 
-    def despesas_criar_labels(self):
-        for index, cfg in enumerate(self.tipos_despesa[1:], 1):
-            self.frame_pct_despesas.grid_rowconfigure(
+    def create_expenses_labels(self):
+        for index, expense_type in enumerate(self.expense_types[1:], 1):
+            self.refund_percentages_frame.grid_rowconfigure(
                 index, weight=0
             )
             ttk.Label(
-                self.frame_pct_despesas,
-                text=cfg,
+                self.refund_percentages_frame,
+                text=expense_type,
                 justify="right"
             ).grid(row=index+1, column=0, padx=5, pady=2)
 
         for col in range(6):
-            self.frame_cfg_despesas.grid_columnconfigure(
+            self.expenses_config_frame.grid_columnconfigure(
                 col, weight=0
             )
-            self.frame_cfg_despesas.grid_columnconfigure(
+            self.expenses_config_frame.grid_columnconfigure(
                 1, minsize=0
             )
 
-        for index, tipo in enumerate(list(['Capitais', 'Outras'])):
+        for index, location in enumerate(list(['Capitais', 'Outras'])):
             ttk.Label(
-                self.frame_pct_despesas,
-                text=tipo,
+                self.refund_percentages_frame,
+                text=location,
                 justify='center',
             ).grid(row=1, column=(index+1)*2, padx=5, pady=2)
 
-    def formatar_moeda(self, numero):
-        formatted = f'R$ {numero:,.2f}'
-        return formatted.replace(',', '#').replace('.', ',').replace('#', '.')
+    def format_currency(self, float_value):
+        formatted_value = f'R$ {float_value:,.2f}'
+        return (
+            formatted_value
+            .replace(',', '#')
+            .replace('.', ',')
+            .replace('#', '.')
+        )
 
-    def validar_moeda(self, valor, dict_cfg, dict_key, *trace_info):
-        if self.validando_moeda:
+    def validate_currency(
+        self,
+        min_wage_var,
+        config_dict,
+        dict_key,
+        *trace_info
+    ):
+        if self.validating_currency:
             return
-        self.validando_moeda = True
+        self.validating_currency = True
 
         try:
-            valor_str = valor.get()
-            valor_num = ''.join(filter(str.isdigit, valor_str))
+            min_wage_str = min_wage_var.get()
+            min_wage_raw = ''.join(filter(str.isdigit, min_wage_str))
 
-            if not valor_num:
-                valor_float = 0.0
+            if not min_wage_raw:
+                min_wage_float = 0.0
             else:
-                valor_float = int(valor_num)/100
+                min_wage_float = int(min_wage_raw)/100
 
-            valor.set(self.formatar_moeda(valor_float))
-            dict_cfg[dict_key] = valor_float
+            min_wage_var.set(self.format_currency(min_wage_float))
+            config_dict[dict_key] = min_wage_float
 
         finally:
-            self.validando_moeda = False
+            self.validating_currency = False
 
-    def despesas_criar_entry_salario(self):
-        sm_frame = ttk.LabelFrame(
-            self.frame_cfg_despesas,
+    def create_min_wage_entry(self):
+        min_wage_frame = ttk.LabelFrame(
+            self.expenses_config_frame,
             text='Salário Mínimo'
         )
-        sm_frame.grid(
+        min_wage_frame.grid(
             row=0,
             column=0,
             columnspan=5,
@@ -121,21 +132,21 @@ class CfgWindow(Tk.Toplevel):
             pady=2,
             sticky='ew'
         )
-        sm_var = Tk.StringVar(
-            value=self.formatar_moeda(
-                self.cfg_despesas['Salário Mínimo']
+        min_wage_var = Tk.StringVar(
+            value=self.format_currency(
+                self.expenses_config['Salário Mínimo']
             ))
-        sm_var.trace_add(
-            'write', self._callback_validar_moeda(
-                sm_var, self.cfg_despesas, 'Salário Mínimo'
+        min_wage_var.trace_add(
+            'write', self._validate_currency_callback(
+                min_wage_var, self.expenses_config, 'Salário Mínimo'
                 ))
 
-        entry_sm = ttk.Entry(
-            sm_frame,
-            textvariable=sm_var,
+        min_wage_entry = ttk.Entry(
+            min_wage_frame,
+            textvariable=min_wage_var,
             validate='all',
             validatecommand=(
-                self.register(self.validar_append_entries),
+                self.register(self.validate_entries_append),
                 '%d',
                 '%P',
                 '%i',
@@ -144,185 +155,200 @@ class CfgWindow(Tk.Toplevel):
             justify='right'
         )
 
-        entry_sm.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        entry_sm.bind("<Button-1>", self.empurrar_caret)
-        entry_sm.bind("<Key>", self.empurrar_caret)
+        min_wage_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        min_wage_entry.bind("<Button-1>", self.push_caret_end)
+        min_wage_entry.bind("<Key>", self.push_caret_end)
 
-    def formatar_decimal(self, numero):
-        return f'{numero:.1f}'.replace('.', ',')
+    def format_decimal(self, float_value):
+        return f'{float_value:.1f}'.replace('.', ',')
 
-    def validar_decimal(self, num, dict_cfg, dict_key, loc_despesa=None, *t):
-        if self.validando_decimal:
+    def validar_decimal(
+        self,
+        value_var,
+        config_dict,
+        dict_key,
+        expense_location=None,
+        *t
+    ):
+        if self.validating_decimal:
             return
 
-        self.validando_decimal = True
-        numero_str = num.get()
-        numero_cru = ''.join(filter(str.isdigit, numero_str))
+        self.validating_decimal = True
+        value_str = value_var.get()
+        value_raw = ''.join(filter(str.isdigit, value_str))
 
-        if not numero_cru:
-            numero_float = 0.0
+        if not value_raw:
+            value_float = 0.0
         else:
-            numero_float = int(numero_cru)/10
-        if numero_float > 100.0:
-            numero_float = 100.0
+            value_float = int(value_raw)/10
+        if value_float > 100.0:
+            value_float = 100.0
 
-        if dict_cfg == self.cfg_despesas:
-            dict_cfg[dict_key][loc_despesa] = numero_float
-            num.set(self.formatar_decimal(numero_float))
+        if config_dict == self.expenses_config:
+            config_dict[dict_key][expense_location] = value_float
+            value_var.set(self.format_decimal(value_float))
 
-            pct_cap = dict_cfg[dict_key].get('Capitais', 0.0)
-            pct_outras = dict_cfg[dict_key].get('Outras', 0.0)
-            if pct_cap == pct_outras:
-                self.cfg_despesas[dict_key]['Irrelevante'] = pct_cap
+            percentage_capitals = config_dict[dict_key].get('Capitais', 0.0)
+            percentage_others = config_dict[dict_key].get('Outras', 0.0)
+            if percentage_capitals == percentage_others:
+                self.expenses_config[dict_key][
+                    'Irrelevante'
+                ] = percentage_capitals
             else:
-                self.cfg_despesas[dict_key]['Irrelevante'] = 0.0
-        elif dict_cfg == self.cfg_gas:
-            dict_cfg[dict_key] = numero_float
-            num.set(self.formatar_decimal(numero_float))
+                self.expenses_config[dict_key]['Irrelevante'] = 0.0
+        elif config_dict == self.fuel_config:
+            config_dict[dict_key] = value_float
+            value_var.set(self.format_decimal(value_float))
 
-        self.validando_decimal = False
+        self.validating_decimal = False
 
-    def despesas_criar_entry_porcentagens(self, loc, coluna):
-        for index, tipo in enumerate(list(self.cfg_despesas.keys())[1:]):
-            pct_var = Tk.StringVar(
-                value=self.formatar_decimal(
-                    self.cfg_despesas[tipo][loc]
+    def create_percentages_entries(self, location, column):
+        for index, type in enumerate(self.expense_types[1:]):
+            percentage_var = Tk.StringVar(
+                value=self.format_decimal(
+                    self.expenses_config[type][location]
                 ))
 
-            pct_var.trace_add(
+            percentage_var.trace_add(
                 'write',
                 lambda *args,
-                v=pct_var,
-                d=self.cfg_despesas,
-                t=tipo,
-                c=loc: self.validar_decimal(
-                    v, d, t, c, *args
+                p=percentage_var,
+                d=self.expenses_config,
+                t=type,
+                c=location: self.validar_decimal(
+                    p, d, t, c, *args
                 ))
 
-            frame_entry = ttk.Frame(self.frame_pct_despesas)
-            frame_entry.grid(
+            percentage_frame = ttk.Frame(self.refund_percentages_frame)
+            percentage_frame.grid(
                 row=index+2,
-                column=coluna,
+                column=column,
                 padx=5,
                 pady=2,
                 sticky='ew'
             )
 
-            pct_entry = ttk.Entry(
-                frame_entry,
-                textvariable=pct_var,
+            percentage_entry = ttk.Entry(
+                percentage_frame,
+                textvariable=percentage_var,
                 width=5,
                 justify='right',
                 validate='all',
                 validatecommand=(
-                    self.register(self.validar_append_entries),
+                    self.register(self.validate_entries_append),
                     '%d',
                     '%P',
                     '%i',
                     '%S'
                 ))
 
-            pct_entry.pack(side=Tk.LEFT, padx=(0, 2))
-            pct_entry.bind("<Button-1>", self.empurrar_caret)
-            pct_entry.bind("<Key>", self.empurrar_caret)
+            percentage_entry.pack(side=Tk.LEFT, padx=(0, 2))
+            percentage_entry.bind("<Button-1>", self.push_caret_end)
+            percentage_entry.bind("<Key>", self.push_caret_end)
 
             ttk.Label(
-                frame_entry,
+                percentage_frame,
                 text='%',
                 justify='left'
             ).pack(side=Tk.LEFT)
 
-    def validar_append_entries(self, tipo_acao, valor_after, index, substring):
-        if tipo_acao != '1':
+    def validate_entries_append(
+        self,
+        action_type,
+        value_after,
+        index,
+        substring
+    ):
+        if action_type != '1':
             return True
 
-        if int(index) >= len(valor_after) - len(substring):
+        if int(index) >= len(value_after) - len(substring):
             return True
 
         return False
 
-    def empurrar_caret(self, event):
+    def push_caret_end(self, event):
         event.widget.after_idle(event.widget.icursor, 'end')
 
-    def fechar(self):
-        self.mw.atualizar_abas()
+    def close(self):
+        self.main_window.update_tabs()
         self.destroy()
 
-    def criar_frame_cfg_gas(self):
-        self.frame_cfg_gas = ttk.Frame(
+    def create_fuel_config_frame(self):
+        self.fuel_config_frame = ttk.Frame(
             self,
             padding=10
         )
-        self.frame_cfg_gas.pack(fill=Tk.X, expand=True, anchor='center')
+        self.fuel_config_frame.pack(fill=Tk.X, expand=True, anchor='center')
 
-    def criar_entry_cfg_gas_custo(self):
-        valor_str = Tk.StringVar(
-            value=self.formatar_moeda(self.cfg_gas['custo_gas'])
+    def create_fuel_cost_config_entry(self):
+        cost_var = Tk.StringVar(
+            value=self.format_currency(self.fuel_config['custo_gas'])
         )
-        valor_str.trace_add(
-            'write', self._callback_validar_moeda(
-                valor_str, self.cfg_gas, 'custo_gas'
+        cost_var.trace_add(
+            'write', self._validate_currency_callback(
+                cost_var, self.fuel_config, 'custo_gas'
             ))
 
-        frame_entry = ttk.LabelFrame(
-            self.frame_cfg_gas,
+        entry_frame = ttk.LabelFrame(
+            self.fuel_config_frame,
             text='Preço do combustível por litro',
         )
-        frame_entry.pack(
+        entry_frame.pack(
             side=Tk.TOP, fill=Tk.BOTH, expand=True, padx=5, pady=2
         )
-        cfg_entry = ttk.Entry(
-            frame_entry,
-            textvariable=valor_str,
+        cost_entry = ttk.Entry(
+            entry_frame,
+            textvariable=cost_var,
             validate='all',
             validatecommand=(
-                self.register(self.validar_append_entries),
+                self.register(self.validate_entries_append),
                 '%d',
                 '%P',
                 '%i',
                 '%S'
             ), justify='right')
-        cfg_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        cfg_entry.bind("<Button-1>", self.empurrar_caret)
-        cfg_entry.bind("<Key>", self.empurrar_caret)
+        cost_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        cost_entry.bind("<Button-1>", self.push_caret_end)
+        cost_entry.bind("<Key>", self.push_caret_end)
 
-    def criar_entry_cfg_gas_consumo(self):
-        valor_str = Tk.StringVar(
-            value=self.formatar_decimal(self.cfg_gas['consumo'])
+    def create_avg_consumption_entry(self):
+        avg_consumption_var = Tk.StringVar(
+            value=self.format_decimal(self.fuel_config['consumo'])
         )
-        valor_str.trace_add(
+        avg_consumption_var.trace_add(
             'write', (
                 lambda *args,
-                v=valor_str,
-                d=self.cfg_gas,
+                v=avg_consumption_var,
+                d=self.fuel_config,
                 k='custo_gas',
                 loc=None:
                     self.validar_decimal(v, d, k, loc, *args)
             ))
 
-        frame_entry = ttk.LabelFrame(
-            self.frame_cfg_gas,
+        entry_frame = ttk.LabelFrame(
+            self.fuel_config_frame,
             text='Rendimento do veículo (km/L)',
         )
-        frame_entry.pack(
+        entry_frame.pack(
             side=Tk.TOP, fill=Tk.BOTH, expand=True, padx=5, pady=2
         )
-        cfg_entry = ttk.Entry(
-            frame_entry,
-            textvariable=valor_str,
+        config_entry = ttk.Entry(
+            entry_frame,
+            textvariable=avg_consumption_var,
             validate='all',
             validatecommand=(
-                self.register(self.validar_append_entries),
+                self.register(self.validate_entries_append),
                 '%d',
                 '%P',
                 '%i',
                 '%S'
             ), justify='right')
-        cfg_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
-        cfg_entry.bind("<Button-1>", self.empurrar_caret)
-        cfg_entry.bind("<Key>", self.empurrar_caret)
+        config_entry.pack(fill=Tk.X, expand=True, padx=5, pady=2)
+        config_entry.bind("<Button-1>", self.push_caret_end)
+        config_entry.bind("<Key>", self.push_caret_end)
 
-    def _callback_validar_moeda(self, valor, dict_cfg, dict_key):
-        return lambda *args: self.validar_moeda(
-            valor, dict_cfg, dict_key, *args
+    def _validate_currency_callback(self, valor, config_dict, dict_key):
+        return lambda *args: self.validate_currency(
+            valor, config_dict, dict_key, *args
         )

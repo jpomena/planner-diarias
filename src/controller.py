@@ -5,9 +5,9 @@ from .report_window import ReportWindow
 from .viagens_window import WindowViagem
 
 
-class Sasori():
+class MainController():
     def __init__(self):
-        self.cfg_despesas = {
+        self.expenses_config = {
             "Salário Mínimo": 1518.00,
             "Lanche em Trajeto": {
                 "Capitais": 1.5, "Outras": 1.5, 'Irrelevante': 1.5
@@ -22,78 +22,74 @@ class Sasori():
             "Janta": {"Capitais": 6.7, "Outras": 4.5},
         }
 
-        self.cfg_gas = {
+        self.fuel_config = {
             "consumo": 10.0,
             "custo_gas": 6.19
         }
-        self.tipos_despesa = list(self.cfg_despesas.keys())[1:]
+        self.expense_types = list(self.expenses_config.keys())[1:]
         self.db = Database()
-        self.mw = MainWindow(self)
+        self.main_window = MainWindow(self)
 
-        self.db.criar_tabelas()
+        self.db.create_tables()
 
-        self.abrir_gui()
+        self.create_gui()
 
-    def abrir_gui(self):
-        self.mw.criar_frame_nome()
-        self.mw.criar_notebook()
-        self.mw.criar_aba_despesas()
-        self.mw.criar_aba_gas()
-        self.mw.criar_frame_controle()
-        self.mw.criar_botoes_controle()
-        self.mw.criar_botoes_sql()
+    def create_gui(self):
+        self.main_window.create_trip_name_frame()
+        self.main_window.create_notebook()
+        self.main_window.create_expenses_tab()
+        self.main_window.create_fuel_tab()
+        self.main_window.create_ctrl_panel_frame()
+        self.main_window.create_ctrl_btn()
+        self.main_window.create_database_btn()
 
-    def abrir_cfg(self, tipo_cfg):
-        CfgWindow(self.mw, self, tipo_cfg)
+    def open_config(self, current_tab):
+        CfgWindow(self.main_window, self, current_tab)
 
-    def gerar_report(self):
-        linhas_despesas = self.mw.aba_despesas.dados_despesas()
-        ReportWindow(self.mw, linhas_despesas)
+    def generate_report(self):
+        expenses_data = self.main_window.expenses_tab.dados_despesas()  # FIXME
+        ReportWindow(self.main_window, expenses_data)
 
-    def viagem_window_open(self):
-        obj = 'open'
-        WindowViagem(self.mw, self, obj, self.carregar_viagem)
-
-    def get_dados_viagem(self):
-        dados_viagem = []
-        dados_despesas = self.mw.get_dados_despesas()
-        dados_gas = self.mw.get_dados_gas()
-
-        dados_viagem.append(dados_despesas)
-        dados_viagem.append(dados_gas)
-
-    def carregar_viagem(self, nome_viagem):
-        obj = 'load'
-        self.fechar_viagem(obj)
-
-        despesas_viagem = self.db.get_despesas_db(nome_viagem)
-        gas_viagem = self.db.get_gas_db(nome_viagem)
-        self.mw.carregar_viagem(despesas_viagem, gas_viagem, nome_viagem)
-
-        info = (
-            'Sucesso', f'A viagem {nome_viagem} foi aberta com sucesso!'
+    def create_open_trip_window(self):
+        window_action = 'open'
+        WindowViagem(
+            self.main_window, self, window_action, self.load_trip
         )
-        self.mw.aviso(info)
 
-    def fechar_viagem(self, obj=None):
-        self.mw.fechar_viagem(obj)
-        self.mw.nome_viagem.set('')
+    def load_trip(self, trip_name_str):
+        window_action = 'load'
+        self.close_trip(window_action)
 
-    def salvar_viagem(self, nome_viagem):
-        nome_viagem_str = nome_viagem.get()
-        self.db.add_viagem(nome_viagem_str)
-        self.salvar_despesas(nome_viagem_str)
+        db_expenses_data = self.db.get_db_expenses(trip_name_str)
+        db_fuel_data = self.db.get_db_fuel(trip_name_str)
+        self.main_window.load_trip(
+            db_expenses_data, db_fuel_data, trip_name_str
+        )
 
-    def salvar_despesas(self, nome_viagem_str):
-        dados_despesas = self.mw.aba_despesas.get_dados_despesas()
-        dados_gas = self.mw.aba_gas.get_dados_gas()
-        self.db.add_dados_viagem(dados_despesas, dados_gas, nome_viagem_str)
+        info_message = (
+            'Sucesso', f'A viagem {trip_name_str} foi aberta com sucesso!'
+        )
+        self.main_window.show_info(info_message)
+
+    def close_trip(self, window_action=None):
+        self.main_window.destroy_trip_widgets(window_action)
+        self.main_window.trip_name_var.set('')
+
+    def save_trip(self, trip_name_var):
+        trip_name_str = trip_name_var.get()
+        self.db.insert_trip(trip_name_str)
+        self.save_trip_data(trip_name_str)
+
+    def save_trip_data(self, nome_viagem_str):
+        expenses_data = self.main_window.expenses_tab.get_expenses_data()
+        fuel_data = self.main_window.fuel_tab.get_fuel_data()
+        self.db.add_trip_data(expenses_data, fuel_data, nome_viagem_str)
 
         info = (
             'Sucesso', f'A viagem {nome_viagem_str} foi salva com sucesso!'
         )
-        self.mw.aviso(info)
+        self.main_window.show_info(info)
 
-    def viagem_window_del(self):
-        obj = 'del'
-        WindowViagem(self.mw, self, obj)
+    def create_del_trip_window(self):
+        window_action = 'del'
+        WindowViagem(self.main_window, self, window_action)
