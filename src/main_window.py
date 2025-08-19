@@ -1,8 +1,8 @@
 import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
-from .aba_desps import ExpensesTab
-from .aba_gas import FuelTab
+from .tab_expenses import ExpensesTab
+from .tab_fuel import FuelTab
 
 
 class MainWindow(ttk.Window):

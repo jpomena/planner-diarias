@@ -1,8 +1,8 @@
 from .database import Database
 from .main_window import MainWindow
-from .cfg_window import ConfigWindow
+from .config_window import ConfigWindow
 from .report_window import ReportWindow
-from .viagens_window import TripMgmtWindow
+from .trip_mgmt_window import TripMgmtWindow
 
 
 class MainController():
