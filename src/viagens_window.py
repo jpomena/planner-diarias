@@ -3,7 +3,7 @@ from tkinter import messagebox
 import ttkbootstrap as ttk
 
 
-class WindowViagem(Tk.Toplevel):
+class TripMgmtWindow(Tk.Toplevel):
     def __init__(
         self,
         master,

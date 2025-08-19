@@ -3,7 +3,7 @@ import ttkbootstrap as ttk
 from datetime import datetime
 
 
-class AbaDespesas:
+class ExpensesTab:
     def __init__(self, parent_frame, controller):
         self.parent_frame = parent_frame
         self.controller = controller
@@ -72,9 +72,9 @@ class AbaDespesas:
 
     def create_row(self, db_expenses_data=None):
         if db_expenses_data:
-            date_str = db_expenses_data['data']
-            type_str = db_expenses_data['tipo']
-            location_str = db_expenses_data['loc']
+            date_str = db_expenses_data['date_str']
+            type_str = db_expenses_data['type_str']
+            location_str = db_expenses_data['location_str']
         else:
             date_str = None
             type_str = None
@@ -113,8 +113,8 @@ class AbaDespesas:
                 dateformat="%d/%m/%Y",
                 startdate=datetime.now()
             )
-        expense_row["data_entry"] = date_entry
-        expense_row["data_var"] = date_entry.entry
+        expense_row['date_entry'] = date_entry
+        expense_row['date_var'] = date_entry.entry
         date_entry.grid(
             row=row_num,
             column=0,
@@ -128,15 +128,15 @@ class AbaDespesas:
             type_var = Tk.StringVar(value=type_str)
         else:
             type_var = Tk.StringVar()
-        expense_row['tipo_var'] = type_var
+        expense_row['type_var'] = type_var
 
-        expense_row['tipo_combobox'] = ttk.Combobox(
+        expense_row['combobox_types'] = ttk.Combobox(
             self.expenses_frame,
             textvariable=type_var,
             values=self.expense_types,
             state="readonly",
         )
-        expense_row["tipo_combobox"].grid(
+        expense_row["combobox_types"].grid(
             row=row_num,
             column=2,
             padx=5,
@@ -144,7 +144,7 @@ class AbaDespesas:
             sticky="ew",
         )
 
-        expense_row["tipo_combobox"].bind(
+        expense_row["combobox_types"].bind(
             "<<ComboboxSelected>>",
             lambda event, r=expense_row, r_n=row_num: (
                 self.update_location(r, r_n),
@@ -157,8 +157,8 @@ class AbaDespesas:
         else:
             location_var = Tk.StringVar(value='Irrelevante')
         location_frame = ttk.Frame(self.expenses_frame)
-        expense_row["loc_frame"] = location_frame
-        expense_row["loc_irrelevante"] = ttk.Label(
+        expense_row["relevant_location_frame"] = location_frame
+        expense_row["irrelevant_location_frame"] = ttk.Label(
             self.expenses_frame,
             text="Irrelevante",
             anchor="center",
@@ -177,7 +177,7 @@ class AbaDespesas:
             variable=location_var
         ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
 
-        expense_row["loc_var"] = location_var
+        expense_row["location_var"] = location_var
         location_var.trace_add(
             "write",
             lambda *args,
@@ -187,48 +187,50 @@ class AbaDespesas:
             ))
 
     def location_relevant(self, expense_row, row_num):
-        expense_row["loc_irrelevante"].grid_remove()
-        expense_row["loc_frame"].grid(row=row_num, column=4, padx=5, pady=2)
+        expense_row["irrelevant_location_frame"].grid_remove()
+        expense_row["relevant_location_frame"].grid(
+            row=row_num, column=4, padx=5, pady=2
+        )
 
     def location_irrelevant(self, expense_row, row_num):
-        expense_row["loc_frame"].grid_remove()
-        expense_row["loc_irrelevante"].grid(
+        expense_row["relevant_location_frame"].grid_remove()
+        expense_row["irrelevant_location_frame"].grid(
             row=row_num, column=4, padx=5, pady=2
         )
 
     def create_value_field(self, expense_row, row_num):
         value_var = Tk.StringVar(value="R$ 0,00")
-        expense_row["valor_var"] = value_var
+        expense_row["value_var"] = value_var
 
-        expense_row["valor_label"] = ttk.Label(
+        expense_row["value_label"] = ttk.Label(
             self.expenses_frame,
-            textvariable=expense_row["valor_var"],
+            textvariable=expense_row["value_var"],
             anchor="e"
         )
-        expense_row["valor_label"].grid(
+        expense_row["value_label"].grid(
             row=row_num, column=6, padx=5, pady=2, sticky="ew"
         )
 
     def create_remover(self, expense_row, row_num):
-        expense_row["removedor"] = ttk.Button(
+        expense_row["remover"] = ttk.Button(
             self.expenses_frame,
             text="X",
             width=3,
             command=lambda: self.remove_row(expense_row),
         )
-        expense_row["removedor"].grid(row=row_num, column=8, padx=25, pady=2)
+        expense_row["remover"].grid(row=row_num, column=8, padx=25, pady=2)
 
     def regrid_widgets(self, expenses_rows):
         for index, expense_row in enumerate(expenses_rows):
             row_num = index + 1
-            expense_row['data_entry'].grid(
+            expense_row['date_entry'].grid(
                 row=row_num,
                 column=0,
                 padx=5,
                 pady=2,
                 sticky="ew"
             )
-            expense_row['tipo_combobox'].grid(
+            expense_row['combobox_types'].grid(
                 row=row_num,
                 column=2,
                 padx=5,
@@ -236,31 +238,31 @@ class AbaDespesas:
                 sticky="ew"
             )
 
-            if expense_row['tipo_var'].get() in ["Almoço", "Janta"]:
-                expense_row['loc_irrelevante'].grid_remove()
-                expense_row['loc_frame'].grid(
+            if expense_row['type_var'].get() in ["Almoço", "Janta"]:
+                expense_row['irrelevant_location_frame'].grid_remove()
+                expense_row['relevant_location_frame'].grid(
                     row=row_num,
                     column=4,
                     padx=5,
                     pady=2
                 )
             else:
-                expense_row['loc_frame'].grid_remove()
-                expense_row['loc_irrelevante'].grid(
+                expense_row['relevant_location_frame'].grid_remove()
+                expense_row['irrelevant_location_frame'].grid(
                     row=row_num,
                     column=4,
                     padx=5,
                     pady=2
                 )
 
-            expense_row['valor_label'].grid(
+            expense_row['value_label'].grid(
                 row=row_num,
                 column=6,
                 padx=5,
                 pady=2,
                 sticky="ew"
             )
-            expense_row['removedor'].grid(
+            expense_row['remover'].grid(
                 row=row_num,
                 column=8,
                 padx=25,
@@ -268,7 +270,7 @@ class AbaDespesas:
             )
 
     def update_location(self, expense_row, row_num):
-        type_str = expense_row["tipo_var"].get()
+        type_str = expense_row["type_var"].get()
         if not type_str or type_str not in self.config:
             self.location_irrelevant(expense_row, row_num)
             return
@@ -281,10 +283,10 @@ class AbaDespesas:
             self.location_irrelevant(expense_row, row_num)
 
     def update_value(self, expense_row):
-        type_str = expense_row["tipo_var"].get()
-        location_str = expense_row["loc_var"].get()
+        type_str = expense_row["type_var"].get()
+        location_str = expense_row["location_var"].get()
         percentage = self.config.get(type_str, {}).get(location_str, 0.0)
-        expense_row["valor_var"].set(
+        expense_row["value_var"].set(
             f'R$ {(self.config["Salário Mínimo"]/100)*percentage:.2f}'.replace(
                 ".", ","
             ))
@@ -317,10 +319,10 @@ class AbaDespesas:
     def get_expenses_data(self):
         expenses_data = []
         for expense_row in self.expenses_rows:
-            date_str = expense_row['data_var'].get()
-            type_str = expense_row['tipo_var'].get()
-            location_str = expense_row['loc_var'].get()
-            value_str = expense_row['valor_var'].get()
+            date_str = expense_row['date_var'].get()
+            type_str = expense_row['type_var'].get()
+            location_str = expense_row['location_var'].get()
+            value_str = expense_row['value_var'].get()
             value_float = float(
                 value_str.replace('R$ ', '').replace('.', '').replace(',', '.')
             )
@@ -330,10 +332,10 @@ class AbaDespesas:
             if percentage_capitals == percentage_others:
                 location_str = 'Irrelevante'
             expense_entry = {
-                'data_desp': date_str,
-                'tipo_desp': type_str,
-                'loc_desp': location_str,
-                'valor_desp': value_float
+                'expense_date': date_str,
+                'expense_type': type_str,
+                'expense_location': location_str,
+                'expense_value': value_float
             }
             expenses_data.append(expense_entry)
         return expenses_data

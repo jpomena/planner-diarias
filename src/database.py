@@ -22,29 +22,29 @@ class Database:
         self.create_tables()
 
     def create_tables(self):
-        create_trips_table_sql = '''CREATE TABLE IF NOT EXISTS viagens (
-            id_viagem INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome_viagem TEXT NOT NULL
+        create_trips_table_sql = '''CREATE TABLE IF NOT EXISTS trips (
+            trip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            trip_name TEXT NOT NULL
         );'''
-        create_expenses_table_sql = '''CREATE TABLE IF NOT EXISTS despesas (
-            id_despesa INTEGER PRIMARY KEY AUTOINCREMENT,
-            data_despesa TEXT,
-            tipo_despesa TEXT NOT NULL,
-            loc_despesa TEXT NOT NULL,
-            valor_despesa REAL NOT NULL,
-            id_viagem INTEGER,
-            FOREIGN KEY (id_viagem)
-            REFERENCES viagens (id_viagem) ON DELETE CASCADE
+        create_expenses_table_sql = '''CREATE TABLE IF NOT EXISTS expenses (
+            expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            expense_date TEXT,
+            expense_type TEXT NOT NULL,
+            expense_location TEXT NOT NULL,
+            expense_value REAL NOT NULL,
+            trip_id INTEGER,
+            FOREIGN KEY (trip_id)
+            REFERENCES trips (trip_id) ON DELETE CASCADE
         );'''
-        create_fuel_table_sql = ''' CREATE TABLE IF NOT EXISTS gas(
-            id_gas INTEGER PRIMARY KEY AUTOINCREMENT,
-            data_gas TEXT,
-            destino_gas TEXT,
-            dist_gas TEXTO NOT NULL,
-            valor_gas REAL NOT NULL,
-            id_viagem INTEGER,
-            FOREIGN KEY (id_viagem)
-            REFERENCES viagens (id_viagem) ON DELETE CASCADE
+        create_fuel_table_sql = ''' CREATE TABLE IF NOT EXISTS fuel(
+            fuel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fuel_date TEXT,
+            fuel_route TEXT,
+            fuel_distance TEXTO NOT NULL,
+            fuel_value REAL NOT NULL,
+            trip_id INTEGER,
+            FOREIGN KEY (trip_id)
+            REFERENCES trips (trip_id) ON DELETE CASCADE
         );'''
         self.cursor.execute(create_trips_table_sql)
         self.cursor.execute(create_expenses_table_sql)
@@ -57,7 +57,7 @@ class Database:
             return trip_id
         else:
             insert_trip_sql = '''
-                INSERT INTO viagens (nome_viagem)
+                INSERT INTO trips (trip_name)
                 VALUES (?);
             '''
             self.cursor.execute(insert_trip_sql, (trip_name_str,))
@@ -69,20 +69,20 @@ class Database:
         trip_id = self.get_id(trip_name_str)
         self.del_trip_data(trip_id)
 
-        insert_expenses_data_sql = '''INSERT INTO despesas (
-        data_despesa, tipo_despesa, loc_despesa, valor_despesa, id_viagem
+        insert_expenses_data_sql = '''INSERT INTO expenses (
+        expense_date, expense_type, expense_location, expense_value, trip_id
         ) VALUES (?, ?, ?, ?, ?)
         '''
-        inser_fuel_data_sql = '''INSERT INTO gas(
-        data_gas, destino_gas, dist_gas, valor_gas, id_viagem
+        inser_fuel_data_sql = '''INSERT INTO fuel(
+        fuel_date, fuel_route, fuel_distance, fuel_value, trip_id
         ) VALUES (?, ?, ?, ?, ?)
         '''
 
         for expense in expenses_data:
-            expense_date = expense['data_desp']
-            expense_type = expense['tipo_desp']
-            expense_location = expense['loc_desp']
-            expense_value = expense['valor_desp']
+            expense_date = expense['expense_date']
+            expense_type = expense['expense_type']
+            expense_location = expense['expense_location']
+            expense_value = expense['expense_value']
             self.cursor.execute(
                 insert_expenses_data_sql, (
                     expense_date,
@@ -93,10 +93,10 @@ class Database:
                 ))
 
         for fuel in fuel_data:
-            fuel_date = fuel['data_gas']
-            fuel_route = fuel['destino_gas']
-            fuel_distance = fuel['dist_gas']
-            fuel_value = fuel['valor_gas']
+            fuel_date = fuel['date_str']
+            fuel_route = fuel['route_str']
+            fuel_distance = fuel['distance_str']
+            fuel_value = fuel['value_float']
             self.cursor.execute(
                 inser_fuel_data_sql, (
                     fuel_date, fuel_route, fuel_distance, fuel_value, trip_id
@@ -106,7 +106,7 @@ class Database:
 
     def get_id(self, trip_name_str):
         get_trip_id_sql = '''
-            SELECT id_viagem FROM viagens WHERE nome_viagem = ?;
+            SELECT trip_id FROM trips WHERE trip_name = ?;
         '''
         self.cursor.execute(get_trip_id_sql, (trip_name_str,))
         query_results = self.cursor.fetchone()
@@ -118,7 +118,7 @@ class Database:
 
     def get_trip_names(self):
         get_trip_name_sql = '''
-            SELECT nome_viagem from viagens
+            SELECT trip_name from trips
         '''
         self.cursor.execute(get_trip_name_sql)
         query_results = self.cursor.fetchall()
@@ -128,10 +128,10 @@ class Database:
 
     def del_trip_data(self, trip_id):
         del_expenses_sql = '''
-            DELETE FROM despesas WHERE id_viagem = ?;
+            DELETE FROM expenses WHERE trip_id = ?;
         '''
         del_fuel_sql = '''
-            DELETE FROM gas WHERE id_viagem = ?;
+            DELETE FROM fuel WHERE trip_id = ?;
         '''
 
         self.cursor.execute(del_expenses_sql, (trip_id,))
@@ -141,52 +141,53 @@ class Database:
     def get_db_expenses(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)
         get_expenses_data_sql = '''
-            SELECT data_despesa, tipo_despesa, loc_despesa, valor_despesa
-            FROM despesas
-            WHERE id_viagem = ?;
+            SELECT expense_date, expense_type, expense_location, expense_value
+            FROM expenses
+            WHERE trip_id = ?;
         '''
         self.cursor.execute(get_expenses_data_sql, (trip_id,))
         query_results = self.cursor.fetchall()
 
-        expenses_data = []
+        expenses_rows = []
         for result in query_results:
-            expense = {
-                'data': result[0],
-                'tipo': result[1],
-                'loc': result[2],
+            expense_row = {
+                'date_str': result[0],
+                'type_str': result[1],
+                'location_str': result[2],
                 'valor': result[3]
             }
-            expenses_data.append(expense)
+            expenses_rows.append(expense_row)
 
-        return expenses_data
+        return expenses_rows
 
     def get_db_fuel(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)
         get_fuel_data_sql = '''
-            SELECT data_gas, destino_gas, dist_gas, valor_gas
-            FROM gas
-            WHERE id_viagem = ?;
+            SELECT fuel_date, fuel_route, fuel_distance, fuel_value
+            FROM fuel
+            WHERE trip_id = ?;
         '''
         self.cursor.execute(get_fuel_data_sql, (trip_id,))
         query_results = self.cursor.fetchall()
 
-        fuel_data = []
+        fuel_rows = []
         for result in query_results:
-            fuel = {
-                'data': result[0],
-                'destino': result[1],
-                'dist': result[2],
+            fuel_row = {
+                'date_str': result[0],
+                'route_str': result[1],
+                'distance_str': result[2],
                 'valor': result[3]
             }
-            fuel_data.append(fuel)
-        return fuel_data
+            fuel_rows.append(fuel_row)
+
+        return fuel_rows
 
     def del_trip(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)
         if trip_id:
             del_trip_sql = '''
-                DELETE FROM viagens
-                WHERE id_viagem = ?;
+                DELETE FROM trips
+                WHERE trip_id = ?;
             '''
 
             self.cursor.execute(del_trip_sql, (trip_id,))

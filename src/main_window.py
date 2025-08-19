@@ -1,8 +1,8 @@
 import tkinter as Tk
 from tkinter import messagebox
 import ttkbootstrap as ttk
-from .aba_desps import AbaDespesas
-from .aba_gas import AbaGas
+from .aba_desps import ExpensesTab
+from .aba_gas import FuelTab
 
 
 class MainWindow(ttk.Window):
@@ -137,7 +137,7 @@ class MainWindow(ttk.Window):
     def create_expenses_tab(self):
         expenses_parent_frame = ttk.Frame(self.root_frame)
         self.notebook.add(expenses_parent_frame, text='Despesas')
-        self.expenses_tab = AbaDespesas(expenses_parent_frame, self.controller)
+        self.expenses_tab = ExpensesTab(expenses_parent_frame, self.controller)
         self.expenses_tab.create_tab_frame()
         self.expenses_tab.create_headers()
         self.expenses_tab.create_row()
@@ -145,7 +145,7 @@ class MainWindow(ttk.Window):
     def create_fuel_tab(self):
         fuel_parent_frame = ttk.Frame(self.root_frame)
         self.notebook.add(fuel_parent_frame, text='Combustível')
-        self.fuel_tab = AbaGas(fuel_parent_frame, self.controller)
+        self.fuel_tab = FuelTab(fuel_parent_frame, self.controller)
         self.fuel_tab.create_tab_frame()
         self.fuel_tab.create_headers()
         self.fuel_tab.create_row()

@@ -24,11 +24,11 @@ class ReportWindow(Tk.Toplevel):
         self.fill_totals_table()
 
     def create_expenses_table(self):
-        columns_ids = ['data', 'tipo', 'loc', 'val']
+        columns_ids = ['date_str', 'type_str', 'location_str', 'val']
         headers = {
-            'data': 'Data',
-            'tipo': 'Tipo de Despesa',
-            'loc': 'Localidade',
+            'date_str': 'date_str',
+            'type_str': 'Tipo de Despesa',
+            'location_str': 'Localidade',
             'val': 'Valor'
         }
 
@@ -60,10 +60,10 @@ class ReportWindow(Tk.Toplevel):
 
     def fill_expenses_table(self):
         for expense_row in self.expenses_rows:
-            date_str = expense_row['data_var'].get()
-            type_str = expense_row['tipo_var'].get()
-            location_str = expense_row['loc_var'].get()
-            value_str = expense_row['valor_var'].get()
+            date_str = expense_row['date_var'].get()
+            type_str = expense_row['type_var'].get()
+            location_str = expense_row['location_var'].get()
+            value_str = expense_row['value_var'].get()
             if type_str != 'Almoço' and type_str != 'Janta':
                 location_str = 'Irrelevante'
             self.expenses_table.insert(
@@ -125,8 +125,8 @@ class ReportWindow(Tk.Toplevel):
             expenses_totals[f'{type}'] = 0.0
 
         for expense_row in self.expenses_rows:
-            type_str = expense_row['tipo_var'].get()
-            value_str = expense_row['valor_var'].get()
+            type_str = expense_row['type_var'].get()
+            value_str = expense_row['value_var'].get()
             value_float = float(value_str.replace('R$ ', '').replace(',', '.'))
             expenses_totals[f'{type_str}'] += value_float
             expenses_totals['Total'] += value_float

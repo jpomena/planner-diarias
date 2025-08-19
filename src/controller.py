@@ -1,8 +1,8 @@
 from .database import Database
 from .main_window import MainWindow
-from .cfg_window import CfgWindow
+from .cfg_window import ConfigWindow
 from .report_window import ReportWindow
-from .viagens_window import WindowViagem
+from .viagens_window import TripMgmtWindow
 
 
 class MainController():
@@ -44,7 +44,7 @@ class MainController():
         self.main_window.create_database_btn()
 
     def open_config(self, current_tab):
-        CfgWindow(self.main_window, self, current_tab)
+        ConfigWindow(self.main_window, self, current_tab)
 
     def generate_report(self):
         expenses_data = self.main_window.expenses_tab.dados_despesas()  # FIXME
@@ -52,7 +52,7 @@ class MainController():
 
     def create_open_trip_window(self):
         window_action = 'open'
-        WindowViagem(
+        TripMgmtWindow(
             self.main_window, self, window_action, self.load_trip
         )
 
@@ -92,4 +92,4 @@ class MainController():
 
     def create_del_trip_window(self):
         window_action = 'del'
-        WindowViagem(self.main_window, self, window_action)
+        TripMgmtWindow(self.main_window, self, window_action)

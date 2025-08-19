@@ -2,7 +2,7 @@ import tkinter as Tk
 import ttkbootstrap as ttk
 
 
-class CfgWindow(Tk.Toplevel):
+class ConfigWindow(Tk.Toplevel):
     def __init__(self, master, controller, current_tab):
         super().__init__(master)
         self.main_window = master

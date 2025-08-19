@@ -3,7 +3,7 @@ import ttkbootstrap as ttk
 from datetime import datetime
 
 
-class AbaGas:
+class FuelTab:
     def __init__(self, parent_frame, controller):
         self.parent_frame = parent_frame
         self.controller = controller
@@ -61,18 +61,18 @@ class AbaGas:
 
     def create_row(self, db_fuel_data=None):
         if db_fuel_data:
-            date_str = db_fuel_data['data']
-            route_str = db_fuel_data['destino']
-            distance_str = db_fuel_data['dist']
+            date_str = db_fuel_data['date_str']
+            route_str = db_fuel_data['route_str']
+            distance_str = db_fuel_data['distance_str']
         else:
             date_str = None
             route_str = None
             distance_str = None
 
         fuel_row = {
-            'data_gas': date_str,
-            'destino_gas': route_str,
-            'dist_gas': distance_str
+            'date_str': date_str,
+            'route_str': route_str,
+            'distance_str': distance_str
         }
         row_num = len(self.fuel_rows) + 1
 
@@ -86,25 +86,24 @@ class AbaGas:
         self.fuel_rows.append(fuel_row)
 
     def create_date_field(self, fuel_row, row_num):
-        if fuel_row['data_gas']:
+        if fuel_row['date_str']:
             date_datetime = datetime.strptime(
-                fuel_row['data_gas'], '%d/%m/%Y'
+                fuel_row['date_str'], '%d/%m/%Y'
             )
-            data_entry = ttk.DateEntry(
+            date_entry = ttk.DateEntry(
                 self.fuel_frame,
                 dateformat="%d/%m/%Y",
                 startdate=date_datetime
             )
 
         else:
-            data_entry = ttk.DateEntry(
+            date_entry = ttk.DateEntry(
                 self.fuel_frame,
                 dateformat="%d/%m/%Y",
                 startdate=datetime.now()
             )
-        fuel_row["data_entry"] = data_entry
-        fuel_row["data_gas"] = data_entry.entry
-        data_entry.grid(
+        fuel_row["date_var"] = date_entry
+        date_entry.grid(
             row=row_num,
             column=0,
             padx=5,
@@ -113,16 +112,15 @@ class AbaGas:
         )
 
     def create_route_field(self, fuel_row, row_num):
-        if not fuel_row['destino_gas']:
-            fuel_row['destino_gas'] = Tk.StringVar()
+        if not fuel_row['route_str']:
+            route_var = Tk.StringVar()
         else:
-            fuel_row['destino_gas'] = Tk.StringVar(
-                value=fuel_row['destino_gas']
+            route_var = Tk.StringVar(
+                value=fuel_row['route_str']
             )
-
         route_entry = ttk.Entry(
             self.fuel_frame,
-            textvariable=fuel_row['destino_gas']
+            textvariable=route_var
         )
         route_entry.grid(
             row=row_num,
@@ -131,13 +129,14 @@ class AbaGas:
             pady=2,
             sticky='ew'
         )
-        fuel_row['destino_entry'] = route_entry
+        fuel_row['route_var'] = route_var
+        fuel_row['route_entry'] = route_entry
 
     def create_distance_field(self, fuel_row, row_num):
-        if not fuel_row['dist_gas']:
-            fuel_row['dist_gas'] = Tk.StringVar()
+        if not fuel_row['distance_str']:
+            distance_var = Tk.StringVar()
         else:
-            fuel_row['dist_gas'] = Tk.StringVar(value=fuel_row['dist_gas'])
+            distance_var = Tk.StringVar(value=fuel_row['distance_str'])
         distance_frame = ttk.Frame(
             self.fuel_frame
         )
@@ -148,7 +147,7 @@ class AbaGas:
         )
         distance_entry = ttk.Entry(
             distance_frame,
-            textvariable=fuel_row['dist_gas'],
+            textvariable=distance_var,
             justify='right'
         )
         fuel_row['dist_entry'] = distance_entry
@@ -167,7 +166,8 @@ class AbaGas:
         km_label.pack(
             side=Tk.LEFT
         )
-        fuel_row['dist_gas'].trace_add(
+        fuel_row['distance_var'] = distance_var
+        distance_var.trace_add(
             'write',
             lambda *args, r=fuel_row: self.validate_distance(r, *args)
         )
@@ -176,10 +176,10 @@ class AbaGas:
 
     def create_value_field(self, fuel_row, row_num):
         value_var = Tk.StringVar(value='R$ 0,00')
-        fuel_row['valor_gas'] = value_var
+        fuel_row['value_var'] = value_var
         value_label = ttk.Label(
             self.fuel_frame,
-            textvariable=fuel_row['valor_gas'],
+            textvariable=value_var,
             justify='right'
         )
         value_label.grid(
@@ -191,13 +191,13 @@ class AbaGas:
         fuel_row['valor_entry'] = value_label
 
     def create_remover(self, fuel_row, row_num):
-        fuel_row['removedor'] = ttk.Button(
+        fuel_row['remover'] = ttk.Button(
             self.fuel_frame,
             text='X',
             width=3,
             command=lambda: self.remove_row(fuel_row)
         )
-        fuel_row['removedor'].grid(row=row_num, column=8, padx=25, pady=2)
+        fuel_row['remover'].grid(row=row_num, column=8, padx=25, pady=2)
 
     def remove_row(self, fuel_row):
         for item in list(fuel_row.values()):
@@ -207,14 +207,14 @@ class AbaGas:
 
     def update_value(self, fuel_row):
         try:
-            distance_str = fuel_row.get('dist_gas').get()
+            distance_str = fuel_row['distance_var'].get()
             distance_float = float(distance_str.replace(',', '.'))
-        except ValueError:
+        except (ValueError, AttributeError):
             distance_float = 0.0
         avg_consumption = self.config.get('consumo', 0.0)
         fuel_cost = self.config.get('custo_gas', 0.0)
         value = (fuel_cost * distance_float) / (avg_consumption)
-        fuel_row['valor_gas'].set(f'R$ {value:.2f}'.replace('.', ','))
+        fuel_row['value_var'].set(f'R$ {value:.2f}'.replace('.', ','))
 
     def update_fuel_tab(self):
         for fuel_row in self.fuel_rows:
@@ -232,14 +232,14 @@ class AbaGas:
             return
         self.validating_distance = True
 
-        value_str = fuel_row['dist_gas'].get()
+        value_str = fuel_row['distance_var'].get()
         value_raw = "".join(filter(str.isdigit, value_str))
         if not value_raw:
             value_float = 0.0
         else:
             value_float = int(value_raw) / 10
 
-        fuel_row['dist_gas'].set(self.format_distance(value_float))
+        fuel_row['distance_var'].set(self.format_distance(value_float))
         self.update_value(fuel_row)
 
         self.validating_distance = False
@@ -250,13 +250,10 @@ class AbaGas:
     def get_fuel_data(self):
         fuel_data = []
         for fuel_row in self.fuel_rows:
-            data_str = fuel_row['data_gas'].get()
-            try:
-                tipo_str = fuel_row['destino_gas'].get()
-            except AttributeError:
-                tipo_str = fuel_row['destino_gas']
-            location_str = fuel_row['dist_gas'].get()
-            value_raw = fuel_row['valor_gas'].get()
+            date_str = fuel_row['date_var'].entry.get()
+            route_str = fuel_row['route_var'].get()
+            distance_str = fuel_row['distance_var'].get()
+            value_raw = fuel_row['value_var'].get()
             value_str = (
                 value_raw
                 .replace('R$ ', '')
@@ -266,10 +263,10 @@ class AbaGas:
             value_float = float(value_str)
 
             fuel_entry = {
-                'data_gas': data_str,
-                'destino_gas': tipo_str,
-                'dist_gas': location_str,
-                'valor_gas': value_float
+                'date_str': date_str,
+                'route_str': route_str,
+                'distance_str': distance_str,
+                'value_float': value_float
             }
             fuel_data.append(fuel_entry)
         return fuel_data
