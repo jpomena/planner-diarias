@@ -52,17 +52,26 @@ class ExpensesTab:
             widget.bind("<Button-5>", scroll_mouse)
 
     def create_headers(self):
-        headers = ["Data", "Tipo", "Localidade", "Valor", ""]
+        headers = {
+            "Data": 10,
+            "Tipo": 25,
+            "Localidade": 20,
+            "Valor": 10,
+            "": 10}
         col_num = len(headers)
         for col in range(5):
-            self.expenses_frame.grid_columnconfigure(col * 2, weight=0)
+            self.expenses_frame.grid_columnconfigure(
+                col * 2,
+                weight=0
+            )
 
-        for col, header in enumerate(headers):
+        for col, (header, width) in enumerate(headers.items()):
             ttk.Label(
                 self.expenses_frame,
                 text=header,
                 anchor="center",
                 font=("Helvetica", 10, "bold"),
+                width=width
             ).grid(row=0, column=col * 2, padx=5, pady=2, sticky="ew")
             if col < col_num - 1:
                 ttk.Separator(
@@ -104,6 +113,7 @@ class ExpensesTab:
             date_entry = ttk.DateEntry(
                 self.expenses_frame,
                 dateformat="%d/%m/%Y",
+                width=10,
                 startdate=date_datetime
             )
 
@@ -111,14 +121,15 @@ class ExpensesTab:
             date_entry = ttk.DateEntry(
                 self.expenses_frame,
                 dateformat="%d/%m/%Y",
-                startdate=datetime.now()
+                startdate=datetime.now(),
+                width=10
             )
         expense_row['date_entry'] = date_entry
         expense_row['date_var'] = date_entry.entry
         date_entry.grid(
             row=row_num,
             column=0,
-            padx=5,
+            padx=10,
             pady=2,
             sticky="ew"
         )
@@ -135,11 +146,12 @@ class ExpensesTab:
             textvariable=type_var,
             values=self.expense_types,
             state="readonly",
+            width=20
         )
         expense_row["combobox_types"].grid(
             row=row_num,
             column=2,
-            padx=5,
+            padx=10,
             pady=2,
             sticky="ew",
         )
@@ -162,19 +174,21 @@ class ExpensesTab:
             self.expenses_frame,
             text="Irrelevante",
             anchor="center",
-            width="20"
+            width=20
         )
         ttk.Radiobutton(
             location_frame,
             text="Capitais",
             value="Capitais",
-            variable=location_var
+            variable=location_var,
+            width=10
         ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
         ttk.Radiobutton(
             location_frame,
             text="Outras",
             value="Outras",
-            variable=location_var
+            variable=location_var,
+            width=10
         ).pack(side=Tk.LEFT, expand=True, fill=Tk.X, padx=5, pady=2)
 
         expense_row["location_var"] = location_var
@@ -188,14 +202,15 @@ class ExpensesTab:
 
     def location_relevant(self, expense_row, row_num):
         expense_row["irrelevant_location_frame"].grid_remove()
-        expense_row["relevant_location_frame"].grid(
-            row=row_num, column=4, padx=5, pady=2
-        )
+        expense_row["relevant_location_frame"].grid(row=row_num, column=4)
 
     def location_irrelevant(self, expense_row, row_num):
         expense_row["relevant_location_frame"].grid_remove()
         expense_row["irrelevant_location_frame"].grid(
-            row=row_num, column=4, padx=5, pady=2
+            row=row_num,
+            column=4,
+            padx=10,
+            pady=2
         )
 
     def create_value_field(self, expense_row, row_num):
@@ -205,10 +220,11 @@ class ExpensesTab:
         expense_row["value_label"] = ttk.Label(
             self.expenses_frame,
             textvariable=expense_row["value_var"],
-            anchor="e"
+            anchor="e",
+            width=5
         )
         expense_row["value_label"].grid(
-            row=row_num, column=6, padx=5, pady=2, sticky="ew"
+            row=row_num, column=6, padx=10, pady=2, sticky="ew"
         )
 
     def create_remover(self, expense_row, row_num):
@@ -218,7 +234,7 @@ class ExpensesTab:
             width=3,
             command=lambda: self.remove_row(expense_row),
         )
-        expense_row["remover"].grid(row=row_num, column=8, padx=25, pady=2)
+        expense_row["remover"].grid(row=row_num, column=8, padx=10, pady=2)
 
     def regrid_widgets(self, expenses_rows):
         for index, expense_row in enumerate(expenses_rows):
@@ -226,14 +242,14 @@ class ExpensesTab:
             expense_row['date_entry'].grid(
                 row=row_num,
                 column=0,
-                padx=5,
+                padx=10,
                 pady=2,
                 sticky="ew"
             )
             expense_row['combobox_types'].grid(
                 row=row_num,
                 column=2,
-                padx=5,
+                padx=10,
                 pady=2,
                 sticky="ew"
             )
@@ -242,30 +258,28 @@ class ExpensesTab:
                 expense_row['irrelevant_location_frame'].grid_remove()
                 expense_row['relevant_location_frame'].grid(
                     row=row_num,
-                    column=4,
-                    padx=5,
-                    pady=2
+                    column=4
                 )
             else:
                 expense_row['relevant_location_frame'].grid_remove()
                 expense_row['irrelevant_location_frame'].grid(
                     row=row_num,
                     column=4,
-                    padx=5,
+                    padx=10,
                     pady=2
                 )
 
             expense_row['value_label'].grid(
                 row=row_num,
                 column=6,
-                padx=5,
+                padx=10,
                 pady=2,
                 sticky="ew"
             )
             expense_row['remover'].grid(
                 row=row_num,
                 column=8,
-                padx=25,
+                padx=10,
                 pady=2
             )
 
@@ -297,8 +311,6 @@ class ExpensesTab:
                 widget.destroy()
         self.expenses_rows.remove(expense_row)
 
-        # Flake8 Reclamaria que minha reclamação é longa e.e
-        # noqa: E501 Porque cargas d'água o tkinter não tá esvaziando isso de imediato? Gambiarra:
         self.regrid_widgets(self.expenses_rows)
 
     def update_expenses_tab(self):

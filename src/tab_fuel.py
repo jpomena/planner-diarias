@@ -41,17 +41,26 @@ class FuelTab:
         canvas.bind("<Configure>", center_frame)
 
     def create_headers(self):
-        headers = ["Data", "Trajeto", "Distância", "Valor", ""]
+        headers = {
+            "Data": 10,
+            "Trajeto": 30,
+            "Distância": 15,
+            "Valor": 10,
+            "": 10
+        }
         col_num = len(headers)
         for col in range(5):
-            self.fuel_frame.grid_columnconfigure(col * 2, weight=0)
-
-        for col, header in enumerate(headers):
+            self.fuel_frame.grid_columnconfigure(
+                col * 2,
+                weight=0
+            )
+        for col, (header, width) in enumerate(headers.items()):
             ttk.Label(
                 self.fuel_frame,
                 text=header,
                 anchor="center",
                 font=("Helvetica", 10, "bold"),
+                width=width
             ).grid(row=0, column=col * 2, padx=5, pady=2, sticky="ew")
             if col < col_num - 1:
                 ttk.Separator(
@@ -62,16 +71,19 @@ class FuelTab:
     def create_row(self, db_fuel_data=None):
         if db_fuel_data:
             date_str = db_fuel_data['date_str']
-            route_str = db_fuel_data['route_str']
+            route_start_str = db_fuel_data['route_start_str']
+            route_end_str = db_fuel_data['route_end_str']
             distance_str = db_fuel_data['distance_str']
         else:
             date_str = None
-            route_str = None
+            route_start_str = None
+            route_end_str = None
             distance_str = None
 
         fuel_row = {
             'date_str': date_str,
-            'route_str': route_str,
+            'route_start_str': route_start_str,
+            'route_end_str': route_end_str,
             'distance_str': distance_str
         }
         row_num = len(self.fuel_rows) + 1
@@ -93,6 +105,7 @@ class FuelTab:
             date_entry = ttk.DateEntry(
                 self.fuel_frame,
                 dateformat="%d/%m/%Y",
+                width=10,
                 startdate=date_datetime
             )
 
@@ -100,6 +113,7 @@ class FuelTab:
             date_entry = ttk.DateEntry(
                 self.fuel_frame,
                 dateformat="%d/%m/%Y",
+                width=10,
                 startdate=datetime.now()
             )
         fuel_row["date_var"] = date_entry
@@ -112,25 +126,65 @@ class FuelTab:
         )
 
     def create_route_field(self, fuel_row, row_num):
-        if not fuel_row['route_str']:
-            route_var = Tk.StringVar()
-        else:
-            route_var = Tk.StringVar(
-                value=fuel_row['route_str']
-            )
-        route_entry = ttk.Entry(
-            self.fuel_frame,
-            textvariable=route_var
+        route_frame = ttk.Frame(
+            self.fuel_frame
         )
-        route_entry.grid(
-            row=row_num,
-            column=2,
+        route_frame.grid(row=row_num, column=2)
+        if not fuel_row['route_start_str']:
+            route_start_var = Tk.StringVar()
+        else:
+            route_start_var = Tk.StringVar(
+                value=fuel_row['route_start_str']
+            )
+        if not fuel_row['route_end_str']:
+            route_end_var = Tk.StringVar()
+        else:
+            route_end_var = Tk.StringVar(
+                value=fuel_row['route_end_str']
+            )
+        for index, label in enumerate(['Origem', 'Destino']):
+            fuel_row[f'route_label{index}'] = ttk.Label(
+                route_frame,
+                text=label,
+                width=10
+            )
+            fuel_row[f'route_label{index}'].grid(
+                row=index,
+                column=0,
+                padx=5,
+                pady=2,
+                sticky='w'
+            )
+        route_start = ttk.Entry(
+            route_frame,
+            textvariable=route_start_var,
+            width=20
+        )
+        route_start.grid(
+            row=0,
+            column=1,
             padx=5,
             pady=2,
             sticky='ew'
         )
-        fuel_row['route_var'] = route_var
-        fuel_row['route_entry'] = route_entry
+        route_end = ttk.Entry(
+            route_frame,
+            textvariable=route_end_var,
+            width=20
+        )
+        route_end.grid(
+            row=1,
+            column=1,
+            padx=5,
+            pady=2,
+            sticky='ew'
+        )
+
+        fuel_row['route_frame'] = route_frame
+        fuel_row['route_start_var'] = route_start_var
+        fuel_row['route_end_var'] = route_end_var
+        fuel_row['route_start_entry'] = route_start
+        fuel_row['route_end_entry'] = route_end
 
     def create_distance_field(self, fuel_row, row_num):
         if not fuel_row['distance_str']:
@@ -148,14 +202,14 @@ class FuelTab:
         distance_entry = ttk.Entry(
             distance_frame,
             textvariable=distance_var,
-            justify='right'
+            justify='right',
+            width=15
         )
-        fuel_row['dist_entry'] = distance_entry
         km_label = ttk.Label(
             distance_frame,
             text='km'
         )
-        fuel_row['km_label'] = km_label
+
         distance_entry.pack(
             side=Tk.LEFT,
             fill=Tk.BOTH,
@@ -166,11 +220,16 @@ class FuelTab:
         km_label.pack(
             side=Tk.LEFT
         )
+
+        fuel_row['km_label'] = km_label
+        fuel_row['dist_entry'] = distance_entry
         fuel_row['distance_var'] = distance_var
+
         distance_var.trace_add(
             'write',
             lambda *args, r=fuel_row: self.validate_distance(r, *args)
         )
+
         fuel_row['dist_entry'].bind('<Key>', self.push_caret_end)
         fuel_row['dist_entry'].bind('<Button-1>', self.push_caret_end)
 
@@ -180,13 +239,15 @@ class FuelTab:
         value_label = ttk.Label(
             self.fuel_frame,
             textvariable=value_var,
-            justify='right'
+            anchor='e',
+            width=5
         )
         value_label.grid(
             row=row_num,
             column=6,
             padx=5,
-            pady=2
+            pady=2,
+            sticky='ew'
         )
         fuel_row['valor_entry'] = value_label
 
@@ -197,13 +258,15 @@ class FuelTab:
             width=3,
             command=lambda: self.remove_row(fuel_row)
         )
-        fuel_row['remover'].grid(row=row_num, column=8, padx=25, pady=2)
+        fuel_row['remover'].grid(row=row_num, column=8, padx=10, pady=2)
 
     def remove_row(self, fuel_row):
         for item in list(fuel_row.values()):
             if isinstance(item, Tk.Widget):
                 item.destroy()
         self.fuel_rows.remove(fuel_row)
+
+        self.regrid_widgets()
 
     def update_value(self, fuel_row):
         try:
@@ -251,7 +314,8 @@ class FuelTab:
         fuel_data = []
         for fuel_row in self.fuel_rows:
             date_str = fuel_row['date_var'].entry.get()
-            route_str = fuel_row['route_var'].get()
+            route_start_str = fuel_row['route_start_var'].get()
+            route_end_str = fuel_row['route_end_var'].get()
             distance_str = fuel_row['distance_var'].get()
             value_raw = fuel_row['value_var'].get()
             value_str = (
@@ -264,7 +328,8 @@ class FuelTab:
 
             fuel_entry = {
                 'date_str': date_str,
-                'route_str': route_str,
+                'route_start_str': route_start_str,
+                'route_end_str': route_end_str,
                 'distance_str': distance_str,
                 'value_float': value_float
             }
@@ -276,3 +341,27 @@ class FuelTab:
             self.remove_row(fuel_row)
         if not window_acton:
             self.create_row()
+
+    def regrid_widgets(self):
+        for index, fuel_row in enumerate(self.fuel_rows):
+            row_num = index + 1
+            fuel_row['date_var'].grid(
+                row=row_num,
+                column=0,
+                padx=5,
+                pady=2,
+                sticky="ew"
+            )
+            fuel_row['route_frame'].grid(row=row_num, column=2)
+            fuel_row['frame_dist'].grid(
+                row=row_num,
+                column=4,
+            )
+            fuel_row['valor_entry'].grid(
+                row=row_num,
+                column=6,
+                padx=5,
+                pady=2,
+                sticky='ew'
+            )
+            fuel_row['remover'].grid(row=row_num, column=8, padx=10, pady=2)

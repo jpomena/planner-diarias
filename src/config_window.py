@@ -14,9 +14,9 @@ class ConfigWindow(Tk.Toplevel):
         self.validating_currency = False
 
         self.title("Configurações")
-        if current_tab == 'despesas':
+        if current_tab == 'expenses':
             self.geometry("400x400")
-        elif current_tab == 'gas':
+        elif current_tab == 'fuel':
             self.geometry('400x150')
         self.transient(master)
         self.grab_set()
@@ -26,14 +26,14 @@ class ConfigWindow(Tk.Toplevel):
         self.protocol('WM_DELETE_WINDOW', self.close)
 
     def populate_config(self, current_tab):
-        if current_tab == 'despesas':
+        if current_tab == 'expenses':
             self.create_expenses_config_frame()
             self.create_expenses_labels()
             self.create_min_wage_entry()
             self.create_percentages_entries('Capitais', 2)
             self.create_percentages_entries('Outras', 4)
 
-        if current_tab == 'gas':
+        if current_tab == 'fuel':
             self.create_fuel_config_frame()
             self.create_fuel_cost_config_entry()
             self.create_avg_consumption_entry()
@@ -95,7 +95,7 @@ class ConfigWindow(Tk.Toplevel):
 
     def validate_currency(
         self,
-        min_wage_var,
+        value_var,
         config_dict,
         dict_key,
         *trace_info
@@ -105,16 +105,16 @@ class ConfigWindow(Tk.Toplevel):
         self.validating_currency = True
 
         try:
-            min_wage_str = min_wage_var.get()
-            min_wage_raw = ''.join(filter(str.isdigit, min_wage_str))
+            value_str = value_var.get()
+            value_raw = ''.join(filter(str.isdigit, value_str))
 
-            if not min_wage_raw:
-                min_wage_float = 0.0
+            if not value_raw:
+                value_float = 0.0
             else:
-                min_wage_float = int(min_wage_raw)/100
+                value_float = int(value_raw)/100
 
-            min_wage_var.set(self.format_currency(min_wage_float))
-            config_dict[dict_key] = min_wage_float
+            value_var.set(self.format_currency(value_float))
+            config_dict[dict_key] = value_float
 
         finally:
             self.validating_currency = False

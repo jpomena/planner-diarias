@@ -3,6 +3,7 @@ from tkinter import messagebox
 import ttkbootstrap as ttk
 from .tab_expenses import ExpensesTab
 from .tab_fuel import FuelTab
+from .tab_plane_tickets import PlaneTicketsTab
 
 
 class MainWindow(ttk.Window):
@@ -67,7 +68,7 @@ class MainWindow(ttk.Window):
         )
 
     def create_ctrl_btn(self):
-        self.current_tab = 'despesas'
+        self.current_tab = 'expenses'
         ctrl_btn_frame = ttk.Frame(self.ctrl_panel_frame)
         ctrl_btn_frame.pack(expand=True, anchor='center')
 
@@ -92,10 +93,12 @@ class MainWindow(ttk.Window):
         self.open_config_btn.pack(side=Tk.LEFT, padx=5, pady=4)
 
     def create_row(self):
-        if self.current_tab == 'despesas':
+        if self.current_tab == 'expenses':
             self.expenses_tab.create_row()
-        elif self.current_tab == 'gas':
+        elif self.current_tab == 'fuel':
             self.fuel_tab.create_row()
+        elif self.current_tab == 'plane_tickets':
+            self.plane_tickets_tab.create_row()
 
     def create_database_btn(self):
         database_ctrl_frame = ttk.Frame(
@@ -136,7 +139,7 @@ class MainWindow(ttk.Window):
 
     def create_expenses_tab(self):
         expenses_parent_frame = ttk.Frame(self.root_frame)
-        self.notebook.add(expenses_parent_frame, text='Despesas')
+        self.notebook.add(expenses_parent_frame, text='Refeições')
         self.expenses_tab = ExpensesTab(expenses_parent_frame, self.controller)
         self.expenses_tab.create_tab_frame()
         self.expenses_tab.create_headers()
@@ -150,14 +153,30 @@ class MainWindow(ttk.Window):
         self.fuel_tab.create_headers()
         self.fuel_tab.create_row()
 
-    def load_trip(self, db_expenses_data, db_fuel_data, trip_name_str):
+    def create_plane_tickets_tab(self):
+        plane_tickets_parent_frame = ttk.Frame(self.root_frame)
+        self.notebook.add(plane_tickets_parent_frame, text='Passagens Aéreas')
+        self.plane_tickets_tab = PlaneTicketsTab(plane_tickets_parent_frame)
+        self.plane_tickets_tab.create_tab_frame()
+        self.plane_tickets_tab.create_headers()
+        self.plane_tickets_tab.create_row()
+
+    def load_trip(
+        self,
+        db_expenses_data,
+        db_fuel_data,
+        db_plane_tickets_data,
+        trip_name_str
+    ):
         self.expenses_tab.load_expenses(db_expenses_data)
         self.fuel_tab.load_fuel(db_fuel_data)
+        self.plane_tickets_tab.load_plane_tickets(db_plane_tickets_data)
         self.trip_name_var.set(trip_name_str)
 
     def destroy_trip_widgets(self, window_action=None):
         self.expenses_tab.remove_expenses_rows(window_action)
         self.fuel_tab.remove_fuel_rows(window_action)
+        self.plane_tickets_tab.remove_plane_tickets_rows(window_action)
 
     def update_tabs(self):
         self.expenses_tab.update_expenses_tab()
@@ -165,5 +184,14 @@ class MainWindow(ttk.Window):
 
     def change_tab(self, event):
         selected_tab = self.notebook.index(self.notebook.select())
-        tab_mapping = {0: 'despesas', 1: 'gas', 2: 'aerea', 3: 'hotel'}
+        tab_mapping = {
+            0: 'expenses',
+            1: 'fuel',
+            2: 'plane_tickets',
+            3: 'hosting'
+        }
         self.current_tab = tab_mapping[int(selected_tab)]
+        if self.current_tab in ('expenses', 'fuel'):
+            self.open_config_btn.pack(side=Tk.LEFT, padx=5, pady=4)
+        else:
+            self.open_config_btn.pack_forget()

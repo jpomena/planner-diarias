@@ -34,7 +34,7 @@ class ReportWindow(Tk.Toplevel):
 
         table_frame = ttk.LabelFrame(
             self.report_frame,
-            text='Despesas',
+            text='expenses',
             padding=10
         )
         table_frame.pack(side=Tk.TOP, fill=Tk.BOTH, padx=5, pady=5)
@@ -108,7 +108,7 @@ class ReportWindow(Tk.Toplevel):
             )
         for col in columns_ids:
             self.totals_table.heading(f'{col}', text=f'{headers[col]}')
-            self.totals_table.column(col, width=150, anchor='center')
+            self.totals_table.column(col, width=100, anchor='center')
 
     def fill_totals_table(self):
         expense_types = [

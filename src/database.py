@@ -39,16 +39,31 @@ class Database:
         create_fuel_table_sql = ''' CREATE TABLE IF NOT EXISTS fuel(
             fuel_id INTEGER PRIMARY KEY AUTOINCREMENT,
             fuel_date TEXT,
-            fuel_route TEXT,
-            fuel_distance TEXTO NOT NULL,
+            fuel_route_start TEXT,
+            fuel_route_end TEXT,
+            fuel_distance TEXT NOT NULL,
             fuel_value REAL NOT NULL,
             trip_id INTEGER,
             FOREIGN KEY (trip_id)
             REFERENCES trips (trip_id) ON DELETE CASCADE
         );'''
+        create_plane_tickets_table_sql = '''
+        CREATE TABLE IF NOT EXISTS plane_tickets(
+            plane_ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plane_ticket_start_date TEXT,
+            plane_ticket_end_date TEXT,
+            plane_ticket_route_start TEXT,
+            plane_ticket_route_end TEXT,
+            plane_ticket_value REAL NOT NULL,
+            trip_id INTEGER,
+            FOREIGN KEY (trip_id)
+            REFERENCES trips (trip_id) ON DELETE CASCADE
+        );'''
+
         self.cursor.execute(create_trips_table_sql)
         self.cursor.execute(create_expenses_table_sql)
         self.cursor.execute(create_fuel_table_sql)
+        self.cursor.execute(create_plane_tickets_table_sql)
         self.conn.commit()
 
     def insert_trip(self, trip_name_str):
@@ -65,16 +80,9 @@ class Database:
             trip_id = self.cursor.lastrowid
             return trip_id
 
-    def add_trip_data(self, expenses_data, fuel_data, trip_name_str):
-        trip_id = self.get_id(trip_name_str)
-        self.del_trip_data(trip_id)
-
+    def add_expenses_data(self, expenses_data, trip_id):
         insert_expenses_data_sql = '''INSERT INTO expenses (
         expense_date, expense_type, expense_location, expense_value, trip_id
-        ) VALUES (?, ?, ?, ?, ?)
-        '''
-        inser_fuel_data_sql = '''INSERT INTO fuel(
-        fuel_date, fuel_route, fuel_distance, fuel_value, trip_id
         ) VALUES (?, ?, ?, ?, ?)
         '''
 
@@ -92,15 +100,63 @@ class Database:
                     trip_id
                 ))
 
+        self.conn.commit()
+
+    def add_fuel_data(self, fuel_data, trip_id):
+        insert_fuel_data_sql = '''INSERT INTO fuel (
+            fuel_date,
+            fuel_route_start,
+            fuel_route_end,
+            fuel_distance,
+            fuel_value,
+            trip_id
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        '''
+
         for fuel in fuel_data:
             fuel_date = fuel['date_str']
-            fuel_route = fuel['route_str']
+            fuel_route_start = fuel['route_start_str']
+            fuel_route_end = fuel['route_end_str']
             fuel_distance = fuel['distance_str']
             fuel_value = fuel['value_float']
             self.cursor.execute(
-                inser_fuel_data_sql, (
-                    fuel_date, fuel_route, fuel_distance, fuel_value, trip_id
+                insert_fuel_data_sql, (
+                    fuel_date,
+                    fuel_route_start,
+                    fuel_route_end,
+                    fuel_distance,
+                    fuel_value,
+                    trip_id
                 ))
+
+        self.conn.commit()
+
+    def add_plane_tickets_data(self, plane_tickets_data, trip_id):
+        insert_plane_tickets_data_sql = ''' INSERT INTO plane_tickets(
+        plane_ticket_start_date,
+        plane_ticket_end_date,
+        plane_ticket_route_start,
+        plane_ticket_route_end,
+        plane_ticket_value,
+        trip_id
+        ) VALUES (?, ?, ?, ?, ?, ?)'''
+
+        for plane_ticket in plane_tickets_data:
+            plane_ticket_start_date = plane_ticket['start_date_str']
+            plane_ticket_end_date = plane_ticket['end_date_str']
+            plane_ticket_route_start = plane_ticket['route_start_str']
+            plane_ticket_route_end = plane_ticket['route_end_str']
+            plane_ticket_value = plane_ticket['value_float']
+            self.cursor.execute(
+                insert_plane_tickets_data_sql, (
+                    plane_ticket_start_date,
+                    plane_ticket_end_date,
+                    plane_ticket_route_start,
+                    plane_ticket_route_end,
+                    plane_ticket_value,
+                    trip_id
+                )
+            )
 
         self.conn.commit()
 
@@ -134,8 +190,13 @@ class Database:
             DELETE FROM fuel WHERE trip_id = ?;
         '''
 
+        del_plane_tickets_sql = '''
+            DELETE FROM plane_tickets WHERE trip_id = ?;
+        '''
+
         self.cursor.execute(del_expenses_sql, (trip_id,))
         self.cursor.execute(del_fuel_sql, (trip_id,))
+        self.cursor.execute(del_plane_tickets_sql, (trip_id,))
         self.conn.commit()
 
     def get_db_expenses(self, trip_name_str):
@@ -163,7 +224,12 @@ class Database:
     def get_db_fuel(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)
         get_fuel_data_sql = '''
-            SELECT fuel_date, fuel_route, fuel_distance, fuel_value
+            SELECT
+                fuel_date,
+                fuel_route_start,
+                fuel_route_end,
+                fuel_distance,
+                fuel_value
             FROM fuel
             WHERE trip_id = ?;
         '''
@@ -174,13 +240,42 @@ class Database:
         for result in query_results:
             fuel_row = {
                 'date_str': result[0],
-                'route_str': result[1],
-                'distance_str': result[2],
-                'valor': result[3]
+                'route_start_str': result[1],
+                'route_end_str': result[2],
+                'distance_str': result[3],
+                'valor': result[4]
             }
             fuel_rows.append(fuel_row)
 
         return fuel_rows
+
+    def get_db_plane_tickets(self, trip_name_str):
+        trip_id = self.get_id(trip_name_str)
+        get_plane_tickets_data_sql = '''
+            SELECT
+                plane_ticket_start_date,
+                plane_ticket_end_date,
+                plane_ticket_route_start,
+                plane_ticket_route_end,
+                plane_ticket_value
+            FROM plane_tickets
+            WHERE trip_id = ?;
+        '''
+        self.cursor.execute(get_plane_tickets_data_sql, (trip_id,))
+        query_results = self.cursor.fetchall()
+
+        plane_tickets_rows = []
+        for result in query_results:
+            plane_ticket_row = {
+                'start_date_str': result[0],
+                'end_date_str': result[1],
+                'route_start_str': result[2],
+                'route_end_str': result[3],
+                'value_str': result[4]
+            }
+            plane_tickets_rows.append(plane_ticket_row)
+
+        return plane_tickets_rows
 
     def del_trip(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)

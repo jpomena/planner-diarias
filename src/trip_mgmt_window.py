@@ -69,7 +69,7 @@ class TripMgmtWindow(Tk.Toplevel):
 
     def load_trip(self):
         trip_name_str = self.trip_name_var.get()
-        if trip_name_str not in ('', 'Nenhuma viagem salva'):
+        if trip_name_str != 'Nenhuma viagem salva':
             self.load_trip_callback(trip_name_str)
         self.destroy()
 
