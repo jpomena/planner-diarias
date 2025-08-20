@@ -2,72 +2,77 @@
 
 ## 1. Visão Geral do Projeto
 
-O "Planner de Diárias" é uma aplicação de desktop desenvolvida em Python com a biblioteca `Tkinter` e o tema `ttkbootstrap`. O objetivo principal da aplicação é permitir que os usuários calculem os custos de despesas de viagem com base em regras de reembolso pré-definidas (percentuais sobre o salário mínimo).
+O "Planner de Diárias" é uma aplicação de desktop desenvolvida em Python com a biblioteca `Tkinter` e o tema `ttkbootstrap`. Seu propósito principal é auxiliar usuários no cálculo e registro de despesas de viagem, baseando-se em regras de reembolso e configurações personalizáveis.
 
-A aplicação permite:
-- Criar e nomear viagens.
-- Adicionar múltiplas linhas de despesas, especificando data, tipo e localidade.
-- Calcular automaticamente o valor de cada despesa com base em configurações personalizáveis.
-- Salvar, carregar e apagar viagens completas em um banco de dados local.
-- Gerar um relatório resumido com o detalhamento das despesas e os totais por categoria.
+As principais funcionalidades incluem:
 
-## 2. Arquitetura do Projeto
+-   **Gerenciamento de Viagens**: Capacidade de criar novas viagens, salvar o progresso, carregar viagens existentes e excluí-las permanentemente do sistema.
+-   **Registro Detalhado de Despesas**:
+    -   **Refeições**: Inclusão de despesas diárias com alimentação (lanche, café da manhã, almoço, café da tarde, jantar), com cálculo automático baseado em um percentual do salário mínimo e na localização (capital ou outras cidades).
+    -   **Combustível**: Registro de rotas e distâncias para cálculo de custos de combustível, considerando o consumo do veículo e o preço por litro.
+    -   **Passagens Aéreas**: Adição de detalhes e custos relacionados a bilhetes de avião.
+    -   **Hospedagem**: Cadastro de datas de início e fim, local e valor total da hospedagem.
+-   **Configurações Flexíveis**: Permite ajustar o valor do salário mínimo de referência, as porcentagens de reembolso para cada tipo de refeição, e as configurações de combustível (consumo e custo).
+-   **Geração de Relatórios**: Criação de um relatório consolidado que detalha todas as despesas registradas e apresenta um resumo total por categoria (EM DESENVOLVIMENTO).
 
-O projeto segue a arquitetura **Model-View-Controller (MVC)**, com uma clara separação de responsabilidades entre as camadas:
+## 2. Estrutura de Arquivos
 
--   **Modelo (Model):** Representado pela classe `Database` (`src/database.py`). É responsável por toda a comunicação com o banco de dados `SQLite`, abstraindo as consultas SQL, e gerenciando a persistência e recuperação de dados.
--   **Visão (View):** Composta por todas as janelas e elementos da interface gráfica. Inclui `src/main_window.py`, `src/configs_window.py`, `src/report_window.py`, e `src/viagens_window.py`. A camada View é responsável apenas por exibir dados e capturar interações do usuário, sem lógica de negócios ou acesso direto ao banco de dados.
--   **Controlador (Controller):** A classe `Sasori` em `src/controller.py` atua como o controlador central. Ela orquestra o fluxo de dados entre a View e o Modelo, processa as entradas do usuário, aplica a lógica de negócios e atualiza tanto o Modelo quanto a View.
-
-## 3. Estrutura de Arquivos
-
-```
 planner-diarias/
 ├── src/
-│ ├── init.py
-│ ├── configs_window.py
-│ ├── controller.py
-│ ├── database.py
-│ ├── main_window.py
-│ ├── report_window.py
-│ └── viagens_window.py
-├── main.py
-├── README.md
-├── requirements.txt
-├── icon.ico
-└── TODO.md
-```
+│ ├── __init__.py
+│ ├── config_window.py          # Janela de configurações
+│ ├── controller.py             # Controlador principal
+│ ├── database.py               # Gerenciamento do banco de dados
+│ ├── main_window.py            # Janela principal da aplicação
+│ ├── report_window.py          # Janela de relatório de despesas
+│ ├── tab_accomodations.py      # Aba para despesas de hospedagem
+│ ├── tab_expenses.py           # Aba para despesas de refeições
+│ ├── tab_fuel.py               # Aba para despesas de combustível
+│ ├── tab_plane_tickets.py      # Aba para despesas de passagens aéreas
+│ └── trip_mgmt_window.py       # Janela para gerenciamento (abrir/apagar) de viagens
+├── main.py                     # Ponto de entrada da aplicação
+├── README.md                   # Este arquivo
+├── requirements.txt            # Dependências do projeto
+├── icon.ico                    # Ícone do aplicativo
+├── TODO.md                     # Lista de tarefas e planos futuros
+└── Sugestões_Gemini            # Sugestões de melhoria arquitetural (pelo modelo de IA)
 
-## 4. Melhorias Recentes (v1.1.0)
+## 3. Melhorias Recentes
 
-Esta seção detalha as principais refatorações e melhorias implementadas:
+Esta seção destaca as refatorações e melhorias mais recentes no projeto:
 
-*   **Padronização de Nomenclatura**: Os nomes dos métodos foram ajustados para seguir o padrão `snake_case`, melhorando a consistência e legibilidade do código em todo o projeto.
-*   **Janela de Viagens Unificada**: As classes separadas `AbrirWindow` e `ApagarWindow` em `src/viagens_window.py` foram refatoradas e unificadas em uma única e mais versátil `WindowViagem`. Isso reduz a duplicação de código e otimiza o gerenciamento das operações relacionadas a viagens (abertura e exclusão).
-*   **Cálculo de Totais do Relatório Aprimorado**: O método `PreencherTabelaTotais` em `src/report_window.py` foi aprimorado. Agora ele utiliza uma abordagem baseada em dicionário para somar os totais das despesas, substituindo a estrutura anterior de `if/elif`. Essa mudança melhora significativamente a legibilidade, a manutenibilidade e a extensibilidade do código para futuros tipos de despesa.
-*   **Ajustes no Controlador**: O arquivo `src/controller.py` foi atualizado para se integrar perfeitamente com a nova classe `WindowViagem`, garantindo a comunicação e a funcionalidade adequadas para abrir e apagar viagens.
-*   **Ícone do Aplicativo**: O ícone padrão do Tkinter foi substituído pelo `icon.ico` fornecido, presente na raiz do projeto.
+*   **Criação de Tabela de Hospedagem**: Foi corrigido um erro de digitação na definição da tabela `accomodations` em `src/database.py`, onde o nome da coluna `trip_integer` foi corrigido para `trip_id INTEGER`. Além disso, a sintaxe SQL para a definição da chave estrangeira foi ajustada para incluir o tipo de dado `INTEGER`.
+*   **Ajuste na Passagem de Dados para Hospedagem**: Em `src/controller.py`, a chamada ao método `get_accomodations_data` na aba de hospedagem foi corrigida para incluir os parênteses `()`, garantindo que o método seja invocado e que os dados sejam passados corretamente para o banco de dados, resolvendo um `TypeError`.
+*   **Melhoria na Modularização da Interface**: A interface principal foi refatorada para utilizar um sistema de abas (`ttk.Notebook`), permitindo uma organização mais intuitiva das diferentes categorias de despesas (Refeições, Combustível, Passagens Aéreas, Hospedagem). Cada categoria agora possui sua própria classe de aba dedicada (`tab_expenses.py`, `tab_fuel.py`, etc.).
+*   **Padronização de Nomenclatura**: Métodos e variáveis foram ajustados para seguir o padrão `snake_case`, conforme preferência do usuário, aumentando a consistência e legibilidade do código.
+*   **Gerenciamento Unificado de Viagens**: As funcionalidades de abrir e apagar viagens foram consolidadas em uma única janela (`trip_mgmt_window.py`), reduzindo a duplicação de código e simplificando o fluxo de gerenciamento de viagens.
+*   **Cálculo de Totais no Relatório**: A lógica de cálculo de totais no relatório (`src/report_window.py`) foi aprimorada, utilizando uma abordagem mais flexível para somar os valores por tipo de despesa, facilitando a adição de novas categorias no futuro.
+*   **Ícone do Aplicativo**: O aplicativo agora utiliza um ícone personalizado (`icon.ico`), melhorando a experiência visual.
 
-## 5. Dependências e Execução
+## 4. Dependências e Execução
 
 ### Dependências
 
-A principal dependência externa é `ttkbootstrap`. As dependências completas estão listadas em `requirements.txt`.
+A principal dependência externa é `ttkbootstrap`, utilizada para o tema visual da aplicação. Todas as dependências necessárias estão listadas no arquivo `requirements.txt`.
 
 ### Como Executar
 
-1.  **Crie e ative um ambiente virtual:**
+Para configurar e rodar o projeto localmente:
+
+1.  **Crie e ative um ambiente virtual (recomendado):**
     ```bash
     python -m venv .venv
     # No Linux/macOS:
     source .venv/bin/activate
-    # No Windows:
+    # No Windows (PowerShell):
     .venv\Scripts\activate
     ```
-2.  **Instale as dependências:**
+
+2.  **Instale as dependências do projeto:**
     ```bash
     pip install -r requirements.txt
     ```
+
 3.  **Execute a aplicação:**
     ```bash
     python main.py
@@ -75,27 +80,15 @@ A principal dependência externa é `ttkbootstrap`. As dependências completas e
 
 ### Como Gerar um Executável (Windows)
 
-Para criar um único arquivo executável do aplicativo, sem a janela do terminal, use `PyInstaller`:
+Para criar um único arquivo executável do aplicativo, sem a janela do terminal, você pode usar `PyInstaller`. Certifique-se de ter o `PyInstaller` instalado (`pip install pyinstaller`).
 
 ```bash
 pyinstaller --onefile --noconsole --icon=icon.ico main.py
 ```
-O executável será gerado na pasta `dist/`.
 
-## 6. Próximos Passos e Planos Futuros
-
-O futuro do "Planner de Diárias" inclui uma expansão significativa da interface do usuário e da funcionalidade, migrando para uma estrutura de abas:
-
-*   **Interface por Abas**: A janela principal será reestruturada para usar um sistema de abas (`ttk.Notebook`), permitindo uma melhor organização das funcionalidades.
-    *   A primeira aba manterá a funcionalidade atual de "Despesas".
-    *   Novas abas serão adicionadas para gerenciar despesas específicas relacionadas a:
-        *   **Carro**: Para registrar custos como combustível, estacionamento, pedágios, etc.
-        *   **Avião**: Para gerenciar custos de passagens, taxas de embarque, bagagem, etc.
-        *   **Hotel**: Para registrar valores de diárias, serviços de quarto, etc.
-
-Esta mudança implicará em atualizações nas camadas de View, Controller e Model para suportar os novos tipos de dados e lógica de negócios.
+Após a execução, o arquivo executável será gerado na pasta `dist/`.
 
 
-
+---
 
 <a href="https://www.flaticon.com/free-icons/trip" title="trip icons">Trip icons created by Wichai.wi - Flaticon</a>
