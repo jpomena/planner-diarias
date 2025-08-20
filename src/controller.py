@@ -6,7 +6,7 @@ from .trip_mgmt_window import TripMgmtWindow
 
 
 class MainController():
-    def __init__(self):
+    def __init__(self, themename):
         self.expenses_config = {
             "Salário Mínimo": 1518.00,
             "Lanche em Trajeto": {

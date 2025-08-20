@@ -8,8 +8,8 @@ from .tab_accomodations import AccomodationsTab
 
 
 class MainWindow(ttk.Window):
-    def __init__(self, controller):
-        super().__init__(themename='darkly')
+    def __init__(self, controller, themename):
+        super().__init__(themename=themename)
         self.controller = controller
 
         self.title("Planner de Diárias")
