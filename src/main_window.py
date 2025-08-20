@@ -4,6 +4,7 @@ import ttkbootstrap as ttk
 from .tab_expenses import ExpensesTab
 from .tab_fuel import FuelTab
 from .tab_plane_tickets import PlaneTicketsTab
+from .tab_accomodations import AccomodationsTab
 
 
 class MainWindow(ttk.Window):
@@ -99,6 +100,8 @@ class MainWindow(ttk.Window):
             self.fuel_tab.create_row()
         elif self.current_tab == 'plane_tickets':
             self.plane_tickets_tab.create_row()
+        elif self.current_tab == 'accomodations':
+            self.accomodations_tab.create_row()
 
     def create_database_btn(self):
         database_ctrl_frame = ttk.Frame(
@@ -161,22 +164,35 @@ class MainWindow(ttk.Window):
         self.plane_tickets_tab.create_headers()
         self.plane_tickets_tab.create_row()
 
+    def create_accomodations_tab(self):
+        accomodation_parent_frame = ttk.Frame(self.root_frame)
+        self.notebook.add(accomodation_parent_frame, text='Hospedagem')
+        self.accomodations_tab = AccomodationsTab(
+            accomodation_parent_frame
+        )
+        self.accomodations_tab.create_tab_frame()
+        self.accomodations_tab.create_headers()
+        self.accomodations_tab.create_row()
+
     def load_trip(
         self,
         db_expenses_data,
         db_fuel_data,
         db_plane_tickets_data,
+        db_accomodations_data,
         trip_name_str
     ):
         self.expenses_tab.load_expenses(db_expenses_data)
         self.fuel_tab.load_fuel(db_fuel_data)
         self.plane_tickets_tab.load_plane_tickets(db_plane_tickets_data)
+        self.accomodations_tab.load_accomodations(db_accomodations_data)
         self.trip_name_var.set(trip_name_str)
 
     def destroy_trip_widgets(self, window_action=None):
         self.expenses_tab.remove_expenses_rows(window_action)
         self.fuel_tab.remove_fuel_rows(window_action)
         self.plane_tickets_tab.remove_plane_tickets_rows(window_action)
+        self.accomodations_tab.remove_accomodations_rows(window_action)
 
     def update_tabs(self):
         self.expenses_tab.update_expenses_tab()
@@ -188,7 +204,7 @@ class MainWindow(ttk.Window):
             0: 'expenses',
             1: 'fuel',
             2: 'plane_tickets',
-            3: 'hosting'
+            3: 'accomodations'
         }
         self.current_tab = tab_mapping[int(selected_tab)]
         if self.current_tab in ('expenses', 'fuel'):

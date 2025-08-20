@@ -22,48 +22,63 @@ class Database:
         self.create_tables()
 
     def create_tables(self):
-        create_trips_table_sql = '''CREATE TABLE IF NOT EXISTS trips (
-            trip_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            trip_name TEXT NOT NULL
-        );'''
-        create_expenses_table_sql = '''CREATE TABLE IF NOT EXISTS expenses (
-            expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            expense_date TEXT,
-            expense_type TEXT NOT NULL,
-            expense_location TEXT NOT NULL,
-            expense_value REAL NOT NULL,
-            trip_id INTEGER,
-            FOREIGN KEY (trip_id)
-            REFERENCES trips (trip_id) ON DELETE CASCADE
-        );'''
-        create_fuel_table_sql = ''' CREATE TABLE IF NOT EXISTS fuel(
-            fuel_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fuel_date TEXT,
-            fuel_route_start TEXT,
-            fuel_route_end TEXT,
-            fuel_distance TEXT NOT NULL,
-            fuel_value REAL NOT NULL,
-            trip_id INTEGER,
-            FOREIGN KEY (trip_id)
-            REFERENCES trips (trip_id) ON DELETE CASCADE
-        );'''
+        create_trips_table_sql = '''
+            CREATE TABLE IF NOT EXISTS trips (
+                trip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                trip_name TEXT NOT NULL
+            );'''
+        create_expenses_table_sql = '''
+            CREATE TABLE IF NOT EXISTS expenses (
+                expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                expense_date TEXT,
+                expense_type TEXT NOT NULL,
+                expense_location TEXT NOT NULL,
+                expense_value REAL NOT NULL,
+                trip_id INTEGER,
+                FOREIGN KEY (trip_id)
+                REFERENCES trips (trip_id) ON DELETE CASCADE
+            );'''
+        create_fuel_table_sql = '''
+            CREATE TABLE IF NOT EXISTS fuel(
+                fuel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fuel_date TEXT,
+                fuel_route_start TEXT,
+                fuel_route_end TEXT,
+                fuel_distance TEXT NOT NULL,
+                fuel_value REAL NOT NULL,
+                trip_id INTEGER,
+                FOREIGN KEY (trip_id)
+                REFERENCES trips (trip_id) ON DELETE CASCADE
+            );'''
         create_plane_tickets_table_sql = '''
-        CREATE TABLE IF NOT EXISTS plane_tickets(
-            plane_ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            plane_ticket_start_date TEXT,
-            plane_ticket_end_date TEXT,
-            plane_ticket_route_start TEXT,
-            plane_ticket_route_end TEXT,
-            plane_ticket_value REAL NOT NULL,
-            trip_id INTEGER,
-            FOREIGN KEY (trip_id)
-            REFERENCES trips (trip_id) ON DELETE CASCADE
-        );'''
+            CREATE TABLE IF NOT EXISTS plane_tickets(
+                plane_ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                plane_ticket_start_date TEXT,
+                plane_ticket_end_date TEXT,
+                plane_ticket_route_start TEXT,
+                plane_ticket_route_end TEXT,
+                plane_ticket_value REAL NOT NULL,
+                trip_id INTEGER,
+                FOREIGN KEY (trip_id)
+                REFERENCES trips (trip_id) ON DELETE CASCADE
+            );'''
+        create_accomodations_table_sql = '''
+            CREATE TABLE IF NOT EXISTS accomodations(
+              accomodation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              accomodation_start_date TEXT,
+              accomodation_end_date TEXT,
+              accomodation_location TEXT,
+              accomodation_value REAL NOT NULL,
+              trip_id INTEGER,
+              FOREIGN KEY (trip_id)
+              REFERENCES trips (trip_id) ON DELETE CASCADE
+            );'''
 
         self.cursor.execute(create_trips_table_sql)
         self.cursor.execute(create_expenses_table_sql)
         self.cursor.execute(create_fuel_table_sql)
         self.cursor.execute(create_plane_tickets_table_sql)
+        self.cursor.execute(create_accomodations_table_sql)
         self.conn.commit()
 
     def insert_trip(self, trip_name_str):
@@ -160,6 +175,33 @@ class Database:
 
         self.conn.commit()
 
+    def add_accomodations_data(self, accomodations_data, trip_id):
+        insert_accomodations_sql = '''
+            INSERT INTO accomodations(
+                accomodation_start_date,
+                accomodation_end_date,
+                accomodation_location,
+                accomodation_value,
+                trip_id
+            ) VALUES (?, ?, ?, ?, ?)'''
+
+        for accomodation in accomodations_data:
+            accomodation_start_date = accomodation['start_date_str']
+            accomodation_end_date = accomodation['end_date_str']
+            accomodation_location = accomodation['location_str']
+            accomodation_value = accomodation['value_float']
+            self.cursor.execute(
+                insert_accomodations_sql, (
+                    accomodation_start_date,
+                    accomodation_end_date,
+                    accomodation_location,
+                    accomodation_value,
+                    trip_id
+                )
+            )
+
+        self.conn.commit()
+
     def get_id(self, trip_name_str):
         get_trip_id_sql = '''
             SELECT trip_id FROM trips WHERE trip_name = ?;
@@ -189,14 +231,17 @@ class Database:
         del_fuel_sql = '''
             DELETE FROM fuel WHERE trip_id = ?;
         '''
-
         del_plane_tickets_sql = '''
             DELETE FROM plane_tickets WHERE trip_id = ?;
+        '''
+        del_accomodations_sql = '''
+            DELETE FROM accomodations WHERE trip_id = ?;
         '''
 
         self.cursor.execute(del_expenses_sql, (trip_id,))
         self.cursor.execute(del_fuel_sql, (trip_id,))
         self.cursor.execute(del_plane_tickets_sql, (trip_id,))
+        self.cursor.execute(del_accomodations_sql, (trip_id,))
         self.conn.commit()
 
     def get_db_expenses(self, trip_name_str):
@@ -276,6 +321,32 @@ class Database:
             plane_tickets_rows.append(plane_ticket_row)
 
         return plane_tickets_rows
+
+    def get_db_accomodations(self, trip_name_str):
+        trip_id = self.get_id(trip_name_str)
+        get_accomodations_data_sql = '''
+            SELECT
+                accomodation_start_date,
+                accomodation_end_date,
+                accomodation_location,
+                accomodation_value
+            FROM accomodations
+            WHERE trip_id = ?;
+        '''
+        self.cursor.execute(get_accomodations_data_sql, (trip_id,))
+        query_results = self.cursor.fetchall()
+
+        accomodations_rows = []
+        for result in query_results:
+            accomodation_row = {
+                'start_date_str': result[0],
+                'end_date_str': result[1],
+                'location_str': result[2],
+                'value_str': result[3]
+            }
+            accomodations_rows.append(accomodation_row)
+
+        return accomodations_rows
 
     def del_trip(self, trip_name_str):
         trip_id = self.get_id(trip_name_str)
