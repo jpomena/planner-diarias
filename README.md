@@ -39,15 +39,39 @@ planner-diarias/
 
 ## 3. Melhorias Recentes
 
-Esta seção destaca as refatorações e melhorias mais recentes no projeto:
+#### :rocket: Novas Features
 
-*   **Criação de Tabela de Hospedagem**: Foi corrigido um erro de digitação na definição da tabela `accomodations` em `src/database.py`, onde o nome da coluna `trip_integer` foi corrigido para `trip_id INTEGER`. Além disso, a sintaxe SQL para a definição da chave estrangeira foi ajustada para incluir o tipo de dado `INTEGER`.
-*   **Ajuste na Passagem de Dados para Hospedagem**: Em `src/controller.py`, a chamada ao método `get_accomodations_data` na aba de hospedagem foi corrigida para incluir os parênteses `()`, garantindo que o método seja invocado e que os dados sejam passados corretamente para o banco de dados, resolvendo um `TypeError`.
-*   **Melhoria na Modularização da Interface**: A interface principal foi refatorada para utilizar um sistema de abas (`ttk.Notebook`), permitindo uma organização mais intuitiva das diferentes categorias de despesas (Refeições, Combustível, Passagens Aéreas, Hospedagem). Cada categoria agora possui sua própria classe de aba dedicada (`tab_expenses.py`, `tab_fuel.py`, etc.).
-*   **Padronização de Nomenclatura**: Métodos e variáveis foram ajustados para seguir o padrão `snake_case`, conforme preferência do usuário, aumentando a consistência e legibilidade do código.
-*   **Gerenciamento Unificado de Viagens**: As funcionalidades de abrir e apagar viagens foram consolidadas em uma única janela (`trip_mgmt_window.py`), reduzindo a duplicação de código e simplificando o fluxo de gerenciamento de viagens.
-*   **Cálculo de Totais no Relatório**: A lógica de cálculo de totais no relatório (`src/report_window.py`) foi aprimorada, utilizando uma abordagem mais flexível para somar os valores por tipo de despesa, facilitando a adição de novas categorias no futuro.
-*   **Ícone do Aplicativo**: O aplicativo agora utiliza um ícone personalizado (`icon.ico`), melhorando a experiência visual.
+*   **Múltiplas Abas de Despesas:** A aplicação foi reestruturada para suportar diferentes tipos de despesas em abas separadas. Agora existem abas para:
+    *   `Refeições` (`tab_expenses.py`): Funcionalidade similar à da versão antiga, mas agora contida em sua própria aba.
+    *   `Combustível` (`tab_fuel.py`): Permite registrar despesas com combustível, calculando o valor com base na distância, consumo médio e preço por litro.
+    *   `Passagens Aéreas` (`tab_plane_tickets.py`): Permite registrar custos de passagens aéreas, com campos para datas de ida/volta e origem/destino.
+    *   `Hospedagem` (`tab_accomodations.py`): Permite registrar custos de hospedagem, com campos para período e localização.
+*   **Configurações Específicas por Aba:** A janela de configurações agora mostra opções relevantes para a aba atualmente selecionada. Por exemplo, ao visualizar a aba `Combustível`, as configurações mostrarão opções para preço do litro e consumo médio do veículo.
+
+#### :building_construction: Refatoração e Mudanças Estruturais
+
+*   **Arquitetura Baseada em Abas (Tabs):** A mudança mais significativa foi a refatoração da `MainWindow`. Em vez de uma única tela com uma lista de despesas, a janela principal agora usa um `ttk.Notebook` para organizar as diferentes categorias de despesas (`Refeições`, `Combustível`, etc.) em abas.
+*   **Renomeação e Reorganização de Arquivos:**
+    *   `controller.py`: A classe `Sasori` foi renomeada para `MainController`.
+    *   `configs_window.py` foi renomeado para `config_window.py`.
+    *   `viagens_window.py` foi renomeado para `trip_mgmt_window.py`.
+    *   A lógica que antes estava diretamente em `main_window.py` para criar as linhas de despesa foi movida e dividida entre os novos arquivos de "abas" (`tab_expenses.py`, `tab_fuel.py`, etc.).
+*   **Banco de Dados:** O esquema do banco de dados foi expandido para suportar as novas categorias de despesas. Foram criadas novas tabelas:
+    *   `fuel`: Para armazenar dados de combustível.
+    *   `plane_tickets`: Para armazenar dados de passagens aéreas.
+    *   `accomodations`: Para armazenar dados de hospedagem.
+    *   A tabela `viagens` foi renomeada para `trips` e `despesas` para `expenses`.
+*   **Lógica do Controlador:** O `MainController` foi atualizado para gerenciar a criação e interação com as novas abas, além de orquestrar o salvamento e carregamento dos dados de todas as tabelas do banco de dados.
+
+#### :art: Melhorias na Interface do Usuário (UI)
+
+*   **Navegação por Abas:** A interface principal agora é mais organizada, permitindo que o usuário navegue facilmente entre os diferentes tipos de despesas.
+*   **Botão de Configurações Contextual:** O botão "Configurações" agora só aparece quando uma aba que possui configurações específicas (como `Refeições` ou `Combustível`) está ativa.
+
+#### :wastebasket: Código Removido/Substituído
+
+*   O arquivo `src/viagens_window.py` foi efetivamente substituído por `src/trip_mgmt_window.py`, que possui uma funcionalidade muito similar, mas com nomes de classes e variáveis atualizados para refletir a nova estrutura.
+*   A maior parte da lógica de criação de widgets de despesa que estava em `src/main_window.py` foi removida e reimplementada dentro das classes de cada aba.
 
 ## 4. Dependências e Execução
 
