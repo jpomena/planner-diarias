@@ -28,7 +28,7 @@ class MainController():
         }
         self.expense_types = list(self.expenses_config.keys())[1:]
         self.db = Database()
-        self.main_window = MainWindow(self)
+        self.main_window = MainWindow(self, themename)
 
         self.db.create_tables()
 
